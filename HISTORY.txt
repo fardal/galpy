@@ -1,6 +1,15 @@
 v1.2 (2016-XX-XX)
 ==================
 
+- Changed arguments of Potential methods that need to be implemented
+  for a new potential (e.g., _Rforce and _zforce) to only explicitly
+  mention the necessary ones and use kwargs for remaining ones (so
+  axisymmetric, time-independent potentials have as arguments
+  R,z,**kwargs; non-axisymmetric, time-independent have
+  R,z,phi=0.,**kwargs; etc.). This breaks the example in Figure 4 of
+  the galpy paper, where _Rforce and _zforce now require an additional
+  *kwargs.
+
 - Added PseudoIsothermalPotential, a standard pseudo-isothermal-sphere
   potential.
 
