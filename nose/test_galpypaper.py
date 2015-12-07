@@ -104,11 +104,12 @@ class TimeInterpPotential(Potential):
         self._dt= dt
         return None
     
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    # Arguments had to be changed from paper for v=v argument
+    def _Rforce(self,R,z,t=0.,**kwargs):
         smooth= smoothInterp(t,self._dt,self._tform)
         return (1.-smooth)*self._pot1.Rforce(R,z)+smooth*self._pot2.Rforce(R,z)
     
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,t=0.,**kwargs):
         smooth= smoothInterp(t,self._dt,self._tform)
         return (1.-smooth)*self._pot1.zforce(R,z)+smooth*self._pot2.zforce(R,z)
 

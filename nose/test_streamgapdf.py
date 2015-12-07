@@ -1019,7 +1019,7 @@ class constantPotential(Potential):
         Potential.__init__(self,amp=1.)
         self.hasC= False
         return None
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         return 0.
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         return 0.
