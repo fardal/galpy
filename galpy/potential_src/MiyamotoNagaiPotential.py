@@ -57,7 +57,7 @@ class MiyamotoNagaiPotential(Potential):
         self.hasC_dxdv= True
         self._nemo_accname= 'MiyamotoNagai'
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -66,8 +66,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -75,7 +73,7 @@ class MiyamotoNagaiPotential(Potential):
         """
         return -1./nu.sqrt(R**2.+(self._a+nu.sqrt(z**2.+self._b2))**2.)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -84,8 +82,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -93,7 +89,7 @@ class MiyamotoNagaiPotential(Potential):
         """
         return -R/(R**2.+(self._a+nu.sqrt(z**2.+self._b2))**2.)**(3./2.)
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -102,8 +98,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -118,7 +112,7 @@ class MiyamotoNagaiPotential(Potential):
             return (-z*asqrtbz/sqrtbz/
                      (R**2.+(self._a+nu.sqrt(z**2.+self._b2))**2.)**(3./2.))
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -127,8 +121,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
@@ -143,7 +135,7 @@ class MiyamotoNagaiPotential(Potential):
             return (self._a*R**2.+(self._a+3.*sqrtbz)*asqrtbz**2.)/\
                 (R**2.+asqrtbz**2.)**2.5/sqrtbz**3./4./nu.pi*self._b2
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _R2deriv
@@ -152,8 +144,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -162,7 +152,7 @@ class MiyamotoNagaiPotential(Potential):
         return 1./(R**2.+(self._a+nu.sqrt(z**2.+self._b2))**2.)**1.5 \
             -3.*R**2./(R**2.+(self._a+nu.sqrt(z**2.+self._b2))**2.)**2.5
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -171,8 +161,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -190,7 +178,7 @@ class MiyamotoNagaiPotential(Potential):
                      +self._a* (3.*self._b2**2. - 4.*z**4. + self._b2*(R**2. - z**2.)))/
                     ((self._b2 + z**2.)**1.5* (R**2. + asqrtbz**2.)**2.5))
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -199,8 +187,6 @@ class MiyamotoNagaiPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:

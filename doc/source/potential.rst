@@ -528,52 +528,55 @@ following series of steps (some of these are also given in the file
 1. Implement the new potential in a class that inherits from ``galpy.potential.Potential``. The new class should have an ``__init__`` method that sets up the necessary parameters for the class. An amplitude parameter ``amp=`` should be taken as an argument for this class and before performing any other setup, the   ``galpy.potential.Potential.__init__(self,amp=amp)`` method should   be called to setup the amplitude. To add support for normalizing the   potential to standard galpy units, one can call the   ``galpy.potential.Potential.normalize`` function at the end of the __init__ function. 
 
   The new potential class should implement some of the following
-  functions: 
+  methods. All methods should take ``R``, ``z``, and ``**kwargs`` as
+  arguments; if the potential is a function of ``phi``, ``t``, or
+  ``v=[vR,vT,vz]``, those can be given as explicit keywords as well.:
 
-  * ``_evaluate(self,R,z,phi=0,t=0)`` which evaluates the
+  * ``_evaluate(self,R,z,**kwargs)`` which evaluates the
     potential itself (*without* the amp factor, which is added in the
     ``__call__`` method of the general Potential class).
 
-  * ``_Rforce(self,R,z,phi=0.,t=0.)`` which evaluates the radial force
+  * ``_Rforce(self,R,z,**kwargs)`` which evaluates the radial force
     in cylindrical coordinates (-d potential / d R).
 
-  * ``_zforce(self,R,z,phi=0.,t=0.)`` which evaluates the vertical force
+  * ``_zforce(self,R,z,**kwargs)`` which evaluates the vertical force
     in cylindrical coordinates (-d potential / d z).
 
-  * ``_R2deriv(self,R,z,phi=0.,t=0.)`` which evaluates the second
+  * ``_R2deriv(self,R,z,**kwargs)`` which evaluates the second
     (cylindrical) radial derivative of the potential (d^2 potential /
     d R^2).
 
-  * ``_z2deriv(self,R,z,phi=0.,t=0.)`` which evaluates the second
+  * ``_z2deriv(self,R,z,**kwargs)`` which evaluates the second
     (cylindrical) vertical derivative of the potential (d^2 potential /
     d z^2).
 
-  * ``_Rzderiv(self,R,z,phi=0.,t=0.)`` which evaluates the mixed
+  * ``_Rzderiv(self,R,z,**kwargs)`` which evaluates the mixed
     (cylindrical) radial and vertical derivative of the potential (d^2
     potential / d R d z).
 
-  * ``_dens(self,R,z,phi=0.,t=0.)`` which evaluates the density. If
+  * ``_dens(self,R,z,**kwargs)`` which evaluates the density. If
     not given, the density is computed using the Poisson equation from
     the first and second derivatives of the potential (if all are
     implemented).
 
-  * ``_mass(self,R,z=0.,t=0.)`` which evaluates the mass. For
+  * ``_mass(self,R,z=0.,**kwargs)`` which evaluates the mass. For
     spherical potentials this should give the mass enclosed within the
     spherical radius; for axisymmetric potentials this should return
     the mass up to ``R`` and between ``-Z`` and ``Z``. If not given,
     the mass is computed by integrating the density (if it is
     implemented or can be calculated from the Poisson equation).
 
-  * ``_phiforce(self,R,z,phi=0.,t=0.)``: the azimuthal force in
-    cylindrical coordinates (assumed zero if not implemented).
+  * ``_phiforce(self,R,z,phi=0.,t=0.,**kwargs)``: the azimuthal force
+    in cylindrical coordinates (assumed zero if not implemented).
 
-  * ``_phi2deriv(self,R,z,phi=0.,t=0.)``: the second azimuthal
-    derivative of the potential in cylindrical coordinates (d^2
-    potential / d phi^2; assumed zero if not given).
-
-  * ``_Rphideriv(self,R,z,phi=0.,t=0.)``: the mixed radial and
+  * ``_phi2deriv(self,R,z,phi=0.,t=0.,**kwargs)``: the second
     azimuthal derivative of the potential in cylindrical coordinates
-    (d^2 potential / d R d phi; assumed zero if not given).
+    (d^2 potential / d phi^2; assumed zero if not given).
+
+  * ``_Rphideriv(self,R,z,phi=0.,t=0.,**kwargs)``: the mixed radial
+    and azimuthal derivative of the potential in cylindrical
+    coordinates (d^2 potential / d R d phi; assumed zero if not
+    given).
 
   If you want to be able to calculate the concentration for a
   potential, you also have to set self._scale to a scale parameter for

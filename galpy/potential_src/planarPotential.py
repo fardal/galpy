@@ -64,7 +64,7 @@ class planarPotential(object):
         elif dR == 1 and dphi == 1:
             return self.Rphideriv(R,phi=phi,t=t)
 
-    def Rforce(self,R,phi=0.,t=0.):
+    def Rforce(self,R,phi=0.,t=0.,v=None):
         """
         NAME:
 
@@ -82,9 +82,11 @@ class planarPotential(object):
 
            t= time (optional)
 
+           v= (None) current velocity as [vR,vT,vz]
+
         OUTPUT:
 
-           F_R(R,(\phi,t)))
+           F_R(R,(\phi,t,v)))
 
         HISTORY:
 
@@ -92,11 +94,11 @@ class planarPotential(object):
 
         """
         try:
-            return self._amp*self._Rforce(R,phi=phi,t=t)
+            return self._amp*self._Rforce(R,phi=phi,t=t,v=v)
         except AttributeError: #pragma: no cover
             raise PotentialError("'_Rforce' function not implemented for this potential")
 
-    def phiforce(self,R,phi=0.,t=0.):
+    def phiforce(self,R,phi=0.,t=0.,v=None):
         """
         NAME:
 
@@ -114,9 +116,11 @@ class planarPotential(object):
 
            t= time (optional)
 
+           v= (None) current velocity as [vR,vT,vz]
+
         OUTPUT:
 
-           F_\phi(R,(\phi,t)))
+           F_\phi(R,(\phi,t,v)))
 
         HISTORY:
 
@@ -124,7 +128,7 @@ class planarPotential(object):
 
         """
         try:
-            return self._amp*self._phiforce(R,phi=phi,t=t)
+            return self._amp*self._phiforce(R,phi=phi,t=t,v=v)
         except AttributeError: #pragma: no cover
             raise PotentialError("'_phiforce' function not implemented for this potential")
 
@@ -249,7 +253,7 @@ class planarAxiPotential(planarPotential):
         self.isNonAxi= False
         return None
     
-    def _phiforce(self,R,phi=0.,t=0.):
+    def _phiforce(self,R,**kwargs):
         return 0.
 
     def _phi2deriv(self,R,phi=0.,t=0.): #pragma: no cover
@@ -529,7 +533,7 @@ class planarPotentialFromRZPotential(planarAxiPotential):
         """
         return self._RZPot(R,0.,t=t)
             
-    def _Rforce(self,R,phi=0.,t=0.):
+    def _Rforce(self,R,phi=0.,t=0.,v=None):
         """
         NAME:
            _Rforce
@@ -539,12 +543,13 @@ class planarPotentialFromRZPotential(planarAxiPotential):
            R
            phi
            t
+           v
         OUTPUT:
-          F_R(R(,\phi,t))
+          F_R(R(,\phi,t,v))
         HISTORY:
            2010-07-13 - Written - Bovy (NYU)
         """
-        return self._RZPot.Rforce(R,0.,t=t)
+        return self._RZPot.Rforce(R,0.,t=t,v=v)
 
     def _R2deriv(self,R,phi=0.,t=0.):
         """
@@ -657,7 +662,7 @@ def evaluateplanarPotentials(R,Pot,phi=None,t=0.,dR=0,dphi=0):
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluatePotentials' is neither a Potential-instance or a list of such instances")
 
-def evaluateplanarRforces(R,Pot,phi=None,t=0.):
+def evaluateplanarRforces(R,Pot,phi=None,t=0.,v=None):
     """
     NAME:
 
@@ -677,9 +682,11 @@ def evaluateplanarRforces(R,Pot,phi=None,t=0.):
 
        t= time (optional)
 
+       v= (None) current velocity as [vR,vT,vz]
+
     OUTPUT:
 
-       F_R(R(,phi,t))
+       F_R(R(,phi,t,v))
 
     HISTORY:
 
@@ -699,19 +706,19 @@ def evaluateplanarRforces(R,Pot,phi=None,t=0.):
         sum= 0.
         for pot in Pot:
             if nonAxi:
-                sum+= pot.Rforce(R,phi=phi,t=t)
+                sum+= pot.Rforce(R,phi=phi,t=t,v=v)
             else:
-                sum+= pot.Rforce(R,t=t)
+                sum+= pot.Rforce(R,t=t,v=v)
         return sum
     elif isinstance(Pot,planarPotential):
         if nonAxi:
-            return Pot.Rforce(R,phi=phi,t=t)
+            return Pot.Rforce(R,phi=phi,t=t,v=v)
         else:
-            return Pot.Rforce(R,t=t)
+            return Pot.Rforce(R,t=t,v=v)
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluatePotentials' is neither a Potential-instance or a list of such instances")
 
-def evaluateplanarphiforces(R,Pot,phi=None,t=0.):
+def evaluateplanarphiforces(R,Pot,phi=None,t=0.,v=None):
     """
     NAME:
 
@@ -731,9 +738,11 @@ def evaluateplanarphiforces(R,Pot,phi=None,t=0.):
 
        t= time (optional)
 
+       v= (None) current velocity as [vR,vT,vz]
+
     OUTPUT:
 
-       F_phi(R(,phi,t))
+       F_phi(R(,phi,t,v))
 
     HISTORY:
 
@@ -753,15 +762,15 @@ def evaluateplanarphiforces(R,Pot,phi=None,t=0.):
         sum= 0.
         for pot in Pot:
             if nonAxi:
-                sum+= pot.phiforce(R,phi=phi,t=t)
+                sum+= pot.phiforce(R,phi=phi,t=t,v=v)
             else:
-                sum+= pot.phiforce(R,t=t)
+                sum+= pot.phiforce(R,t=t,v=v)
         return sum
     elif isinstance(Pot,planarPotential):
         if nonAxi:
-            return Pot.phiforce(R,phi=phi,t=t)
+            return Pot.phiforce(R,phi=phi,t=t,v=v)
         else:
-            return Pot.phiforce(R,t=t)
+            return Pot.phiforce(R,t=t,v=v)
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluatePotentials' is neither a Potential-instance or a list of such instances")
 

@@ -56,7 +56,7 @@ class LogarithmicHaloPotential(Potential):
         self._nemo_accname= 'LogPot'
         return None
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -65,8 +65,6 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -75,7 +73,7 @@ class LogarithmicHaloPotential(Potential):
         """
         return 1./2.*nu.log(R**2.+(z/self._q)**2.+self._core2)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -84,15 +82,13 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
         """
         return -R/(R**2.+(z/self._q)**2.+self._core2)
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -101,15 +97,13 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
         """
         return -z/self._q**2./(R**2.+(z/self._q)**2.+self._core2)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -118,8 +112,6 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
@@ -128,7 +120,7 @@ class LogarithmicHaloPotential(Potential):
                                            +(2.-self._q**-2.)*z**2.)/\
                                            (R**2.+(z/self._q)**2.+self._core2)**2.
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _R2deriv
@@ -137,8 +129,6 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -147,7 +137,7 @@ class LogarithmicHaloPotential(Potential):
         denom= 1./(R**2.+(z/self._q)**2.+self._core2)
         return denom-2.*R**2.*denom**2.
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -156,8 +146,6 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -166,7 +154,7 @@ class LogarithmicHaloPotential(Potential):
         denom= 1./(R**2.+(z/self._q)**2.+self._core2)
         return denom/self._q**2.-2.*z**2.*denom**2./self._q**4.
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -175,8 +163,6 @@ class LogarithmicHaloPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            d2Phi/dR/dz
         HISTORY:

@@ -95,7 +95,7 @@ class DoubleExponentialDiskPotential(Potential):
         #Load Kepler potential for large R
         self._kp= KeplerPotential(normalize=4.*nu.pi/self._alpha**2./self._beta)
 
-    def _evaluate(self,R,z,phi=0.,t=0.,dR=0,dphi=0):
+    def _evaluate(self,R,z,dR=0,**kwargs):
         """
         NAME:
            _evaluate
@@ -104,8 +104,6 @@ class DoubleExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            potential at (R,z)
         HISTORY:
@@ -140,7 +138,7 @@ class DoubleExponentialDiskPotential(Potential):
             if floatIn: return out[0]
             else: return out
     
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            Rforce
@@ -149,8 +147,6 @@ class DoubleExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            K_R (R,z)
         HISTORY:
@@ -173,7 +169,7 @@ class DoubleExponentialDiskPotential(Potential):
             evalInt= ks*special.jn(1,ks*R)*(self._alpha**2.+ks**2.)**-1.5*(self._beta*nu.exp(-ks*nu.fabs(z))-ks*nu.exp(-self._beta*nu.fabs(z)))/(self._beta**2.-ks**2.)
             return -2.*nu.pi*self._alpha*nu.sum(weights*evalInt)
     
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            zforce
@@ -182,8 +178,6 @@ class DoubleExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            K_z (R,z)
         HISTORY:
@@ -208,7 +202,7 @@ class DoubleExponentialDiskPotential(Potential):
             else:
                 return 2.*nu.pi*self._alpha*self._beta*nu.sum(weights*evalInt)
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            R2deriv
@@ -217,8 +211,6 @@ class DoubleExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            -d K_R (R,z) d R
         HISTORY:
@@ -244,7 +236,7 @@ class DoubleExponentialDiskPotential(Potential):
             return nu.pi*self._alpha*(nu.sum(weights0*evalInt0)
                                       -nu.sum(weights2*evalInt2))
     
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            z2deriv
@@ -275,7 +267,7 @@ class DoubleExponentialDiskPotential(Potential):
             evalInt= ks*special.jn(0,ks*R)*(self._alpha**2.+ks**2.)**-1.5*(ks*nu.exp(-ks*nu.fabs(z))-self._beta*nu.exp(-self._beta*nu.fabs(z)))/(self._beta**2.-ks**2.)
             return -2.*nu.pi*self._alpha*self._beta*nu.sum(weights*evalInt)
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            Rzderiv
@@ -309,7 +301,7 @@ class DoubleExponentialDiskPotential(Potential):
             else:
                 return 2.*nu.pi*self._alpha*self._beta*nu.sum(weights*evalInt)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            dens

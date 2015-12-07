@@ -51,7 +51,7 @@ class PseudoIsothermalPotential(Potential):
             self.normalize(normalize)
         return None
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -60,8 +60,6 @@ class PseudoIsothermalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -72,7 +70,7 @@ class PseudoIsothermalPotential(Potential):
         return (0.5*nu.log(1+r2/self._a2)\
                     +self._a/r*nu.arctan(r/self._a))/self._a
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -81,8 +79,6 @@ class PseudoIsothermalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -92,7 +88,7 @@ class PseudoIsothermalPotential(Potential):
         r= nu.sqrt(r2)
         return -(1./r-self._a/r2*nu.arctan(r/self._a))/self._a*R/r
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -101,8 +97,6 @@ class PseudoIsothermalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -112,7 +106,7 @@ class PseudoIsothermalPotential(Potential):
         r= nu.sqrt(r2)
         return -(1./r-self._a/r2*nu.arctan(r/self._a))/self._a*z/r
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -121,8 +115,6 @@ class PseudoIsothermalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
@@ -130,7 +122,7 @@ class PseudoIsothermalPotential(Potential):
         """
         return 1./(1.+(R**2.+z**2.)/self._a2)/4./nu.pi/self._a3
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _R2deriv
@@ -139,8 +131,6 @@ class PseudoIsothermalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -152,7 +142,7 @@ class PseudoIsothermalPotential(Potential):
                     +self._a/r2/r*(3.*R**2./r2-1.)*nu.arctan(r/self._a))\
                     /self._a
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -174,7 +164,7 @@ class PseudoIsothermalPotential(Potential):
                     +self._a/r2/r*(3.*z**2./r2-1.)*nu.arctan(r/self._a))\
                     /self._a
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv

@@ -58,7 +58,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         self.hasC_dxdv= True
         self._nemo_accname= 'PowSphwCut'
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -67,8 +67,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -77,7 +75,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         r= nu.sqrt(R**2.+z**2.)
         return 2.*nu.pi*self.rc**(3.-self.alpha)/r*(r/self.rc*special.gamma(1.-self.alpha/2.)*special.gammainc(1.-self.alpha/2.,(r/self.rc)**2.)-special.gamma(1.5-self.alpha/2.)*special.gammainc(1.5-self.alpha/2.,(r/self.rc)**2.))
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -86,8 +84,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -96,7 +92,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         r= nu.sqrt(R*R+z*z)
         return -self._mass(r)*R/r**3.
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -105,8 +101,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -115,7 +109,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         r= nu.sqrt(R*R+z*z)
         return -self._mass(r)*z/r**3.
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _Rderiv
@@ -124,8 +118,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -135,7 +127,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         return 4.*nu.pi*r**(-2.-self.alpha)*nu.exp(-(r/self.rc)**2.)*R**2.\
             +self._mass(r)/r**5.*(z**2.-2.*R**2.)
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -144,8 +136,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -155,7 +145,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         return 4.*nu.pi*r**(-2.-self.alpha)*nu.exp(-(r/self.rc)**2.)*z**2.\
             +self._mass(r)/r**5.*(R**2.-2.*z**2.)
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -164,8 +154,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:
@@ -175,7 +163,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         return R*z*(4.*nu.pi*r**(-2.-self.alpha)*nu.exp(-(r/self.rc)**2.)
                     -3.*self._mass(r)/r**5.)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -184,8 +172,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
@@ -194,7 +180,7 @@ class PowerSphericalPotentialwCutoff(Potential):
         r= nu.sqrt(R**2.+z**2.)
         return 1./r**self.alpha*nu.exp(-(r/self.rc)**2.)
 
-    def _mass(self,R,z=0.,t=0.):
+    def _mass(self,R,z=0.,**kwargs):
         """
         NAME:
            _mass
@@ -203,7 +189,6 @@ class PowerSphericalPotentialwCutoff(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           t - time
         OUTPUT:
            the mass enclosed
         HISTORY:

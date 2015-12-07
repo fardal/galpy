@@ -87,7 +87,7 @@ class Potential(object):
         elif dR != 0 or dphi != 0:
             raise NotImplementedError('Higher-order derivatives not implemented for this potential')
         
-    def Rforce(self,R,z,phi=0.,t=0.):
+    def Rforce(self,R,z,phi=0.,t=0.,v=None):
         """
         NAME:
 
@@ -103,13 +103,15 @@ class Potential(object):
 
            z - vertical height
 
-           phi - azimuth (optional)
+           phi= (0.) azimuth (optional)
 
-           t - time (optional)
+           t= (0.) time (optional)
+
+           v= (None) current velocity as [vR,vT,vz]
 
         OUTPUT:
 
-           F_R (R,z,phi,t)
+           F_R (R,z,phi,t,v)
 
         HISTORY:
 
@@ -117,11 +119,11 @@ class Potential(object):
 
         """
         try:
-            return self._amp*self._Rforce(R,z,phi=phi,t=t)
+            return self._amp*self._Rforce(R,z,phi=phi,t=t,v=v)
         except AttributeError: #pragma: no cover
             raise PotentialError("'_Rforce' function not implemented for this potential")
         
-    def zforce(self,R,z,phi=0.,t=0.):
+    def zforce(self,R,z,phi=0.,t=0.,v=None):
         """
         NAME:
 
@@ -137,13 +139,15 @@ class Potential(object):
 
            z - vertical height
 
-           phi - azimuth (optional)
+           phi= (0.) azimuth (optional)
 
-           t - time (optional)
+           t= (0.) time (optional)
+
+           v= (None) current velocity as [vR,vT,vz]
 
         OUTPUT:
 
-           F_z (R,z,phi,t)
+           F_z (R,z,phi,t,v)
 
         HISTORY:
 
@@ -151,7 +155,7 @@ class Potential(object):
 
         """
         try:
-            return self._amp*self._zforce(R,z,phi=phi,t=t)
+            return self._amp*self._zforce(R,z,phi=phi,t=t,v=v)
         except AttributeError: #pragma: no cover
             raise PotentialError("'_zforce' function not implemented for this potential")
 
@@ -421,7 +425,7 @@ class Potential(object):
         """
         self._amp*= norm/nu.fabs(self.Rforce(1.,0.,t=t))
 
-    def phiforce(self,R,z,phi=0.,t=0.):
+    def phiforce(self,R,z,phi=0.,t=0.,v=None):
         """
         NAME:
 
@@ -437,13 +441,15 @@ class Potential(object):
 
            z - vertical height
 
-           phi - azimuth (rad)
+           phi= (0.) azimuth (optional)
 
-           t - time (optional)
+           t= (0.) time (optional)
+
+           v= (None) current velocity as [vR,vT,vz]
 
         OUTPUT:
 
-           F_phi (R,z,phi,t)
+           F_phi (R,z,phi,t,v)
 
         HISTORY:
 
@@ -451,7 +457,7 @@ class Potential(object):
 
         """
         try:
-            return self._amp*self._phiforce(R,z,phi=phi,t=t)
+            return self._amp*self._phiforce(R,z,phi=phi,t=t,v=v)
         except AttributeError: #pragma: no cover
             return 0.
 
@@ -523,7 +529,7 @@ class Potential(object):
         except AttributeError: #pragma: no cover
             return 0.
 
-    def _phiforce(self,R,z,phi=0.,t=0.):
+    def _phiforce(self,R,z,**kwargs):
         """
         NAME:
            _phiforce
@@ -532,10 +538,8 @@ class Potential(object):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth (rad)
-           t - time (optional)
         OUTPUT:
-           F_phi (R,z,phi,t)
+           F_phi (R,z)
         HISTORY:
            2010-07-10 - Written - Bovy (NYU)
         """
@@ -1265,7 +1269,7 @@ def evaluateDensities(R,z,Pot,phi=0.,t=0.,forcepoisson=False):
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluateDensities' is neither a Potential-instance or a list of such instances")
 
-def evaluateRforces(R,z,Pot,phi=0.,t=0.):
+def evaluateRforces(R,z,Pot,phi=0.,t=0.,v=None):
     """
     NAME:
        evaluateRforce
@@ -1278,25 +1282,32 @@ def evaluateRforces(R,z,Pot,phi=0.,t=0.):
 
        Pot - a potential or list of potentials
 
-       phi - azimuth (optional)
+       phi= (0.) azimuth (optional)
 
-       t - time (optional)
+       t= (0.) time (optional)
+
+       v= (None) current velocity as [vR,vT,vz]
+
     OUTPUT:
-       F_R(R,z,phi,t)
+
+       F_R(R,z,phi,t,v)
+
     HISTORY:
+
        2010-04-16 - Written - Bovy (NYU)
+
     """
     if isinstance(Pot,list):
         sum= 0.
         for pot in Pot:
-            sum+= pot.Rforce(R,z,phi=phi,t=t)
+            sum+= pot.Rforce(R,z,phi=phi,t=t,v=v)
         return sum
     elif isinstance(Pot,Potential):
-        return Pot.Rforce(R,z,phi=phi,t=t)
+        return Pot.Rforce(R,z,phi=phi,t=t,v=v)
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluateRforces' is neither a Potential-instance or a list of such instances")
 
-def evaluatephiforces(R,z,Pot,phi=0.,t=0.):
+def evaluatephiforces(R,z,Pot,phi=0.,t=0.,v=None):
     """
     NAME:
 
@@ -1313,13 +1324,15 @@ def evaluatephiforces(R,z,Pot,phi=0.,t=0.):
 
        Pot - a potential or list of potentials
 
-       phi - azimuth (optional)
+       phi= (0.) azimuth (optional)
 
-       t - time (optional)
+       t= (0.) time (optional)
+
+       v= (None) current velocity as [vR,vT,vz]
 
     OUTPUT:
 
-       F_phi(R,z,phi,t)
+       F_phi(R,z,phi,t,v)
 
     HISTORY:
 
@@ -1329,14 +1342,14 @@ def evaluatephiforces(R,z,Pot,phi=0.,t=0.):
     if isinstance(Pot,list):
         sum= 0.
         for pot in Pot:
-            sum+= pot.phiforce(R,z,phi=phi,t=t)
+            sum+= pot.phiforce(R,z,phi=phi,t=t,v=v)
         return sum
     elif isinstance(Pot,Potential):
-        return Pot.phiforce(R,z,phi=phi,t=t)
+        return Pot.phiforce(R,z,phi=phi,t=t,v=v)
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluatephiforces' is neither a Potential-instance or a list of such instances")
 
-def evaluatezforces(R,z,Pot,phi=0.,t=0.):
+def evaluatezforces(R,z,Pot,phi=0.,t=0.,v=None):
     """
     NAME:
 
@@ -1354,13 +1367,15 @@ def evaluatezforces(R,z,Pot,phi=0.,t=0.):
 
        Pot - a potential or list of potentials
 
-       phi - azimuth (optional)
+       phi= (0.) azimuth (optional)
 
-       t - time (optional)
+       t= (0.) time (optional)
+
+       v= (None) current velocity as [vR,vT,vz]
 
     OUTPUT:
 
-       F_z(R,z,phi,t)
+       F_z(R,z,phi,t,v)
 
     HISTORY:
 
@@ -1370,10 +1385,10 @@ def evaluatezforces(R,z,Pot,phi=0.,t=0.):
     if isinstance(Pot,list):
         sum= 0.
         for pot in Pot:
-            sum+= pot.zforce(R,z,phi=phi,t=t)
+            sum+= pot.zforce(R,z,phi=phi,t=t,v=v)
         return sum
     elif isinstance(Pot,Potential):
-        return Pot.zforce(R,z,phi=phi,t=t)
+        return Pot.zforce(R,z,phi=phi,t=t,v=v)
     else: #pragma: no cover 
         raise PotentialError("Input to 'evaluatezforces' is neither a Potential-instance or a list of such instances")
 

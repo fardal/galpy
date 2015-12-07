@@ -53,7 +53,7 @@ class PlummerPotential(Potential):
         self.hasC_dxdv= True
         self._nemo_accname= 'Plummer'
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -62,8 +62,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -71,7 +69,7 @@ class PlummerPotential(Potential):
         """
         return -1./nu.sqrt(R**2.+z**2.+self._b2)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -80,8 +78,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -90,7 +86,7 @@ class PlummerPotential(Potential):
         dPhidrr= -(R**2.+z**2.+self._b2)**-1.5
         return dPhidrr*R
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -99,8 +95,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -109,7 +103,7 @@ class PlummerPotential(Potential):
         dPhidrr= -(R**2.+z**2.+self._b2)**-1.5
         return dPhidrr*z
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -118,8 +112,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
@@ -127,7 +119,7 @@ class PlummerPotential(Potential):
         """
         return 3./4./nu.pi*self._b2*(R**2.+z**2.+self._b2)**-2.5
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _R2deriv
@@ -136,8 +128,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -145,7 +135,7 @@ class PlummerPotential(Potential):
         """
         return (self._b2-2.*R**2.+z**2.)*(R**2.+z**2.+self._b2)**-2.5
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -154,8 +144,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -163,7 +151,7 @@ class PlummerPotential(Potential):
         """
         return (self._b2+R**2.-2.*z**2.)*(R**2.+z**2.+self._b2)**-2.5
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -172,8 +160,6 @@ class PlummerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:

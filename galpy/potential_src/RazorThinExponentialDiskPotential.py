@@ -69,7 +69,7 @@ class RazorThinExponentialDiskPotential(Potential):
         #Load Kepler potential for large R
         #self._kp= KeplerPotential(normalize=4.*nu.pi/self._alpha**2./self._beta)
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -78,8 +78,6 @@ class RazorThinExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            potential at (R,z)
         HISTORY:
@@ -99,7 +97,7 @@ class RazorThinExponentialDiskPotential(Potential):
             return -2.*self._alpha*nu.sum(weights*evalInt)
         raise NotImplementedError("Not new=True not implemented for RazorThinExponentialDiskPotential")
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            Rforce
@@ -108,8 +106,6 @@ class RazorThinExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            K_R (R,z)
         HISTORY:
@@ -139,7 +135,7 @@ class RazorThinExponentialDiskPotential(Potential):
                 return -2.*nu.sqrt(2.)*self._alpha*nu.sum(weights1*evalInt1)
         raise NotImplementedError("Not new=True not implemented for RazorThinExponentialDiskPotential")
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            zforce
@@ -148,8 +144,6 @@ class RazorThinExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            K_z (R,z)
         HISTORY:
@@ -179,7 +173,7 @@ class RazorThinExponentialDiskPotential(Potential):
         raise NotImplementedError("Not new=True not implemented for RazorThinExponentialDiskPotential")
 
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            R2deriv
@@ -188,8 +182,6 @@ class RazorThinExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            -d K_R (R,z) d R
         HISTORY:
@@ -202,7 +194,7 @@ class RazorThinExponentialDiskPotential(Potential):
                     +nu.pi/4.*self._alpha**2.*R*(special.i1(y)*(3.*special.k0(y)+special.kn(2,y))-special.k1(y)*(3.*special.i0(y)+special.iv(2,y)))
             raise AttributeError("'R2deriv' for RazorThinExponentialDisk not implemented for z =/= 0")
 
-    def _z2deriv(self,R,z,phi=0.,t=0.): #pragma: no cover
+    def _z2deriv(self,R,z,**kwargs): #pragma: no cover
         """
         NAME:
            z2deriv
@@ -211,8 +203,6 @@ class RazorThinExponentialDiskPotential(Potential):
         INPUT:
            R - Cylindrical Galactocentric radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            -d K_z (R,z) d z
         HISTORY:

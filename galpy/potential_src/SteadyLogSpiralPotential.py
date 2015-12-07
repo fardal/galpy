@@ -80,7 +80,7 @@ class SteadyLogSpiralPotential(planarPotential):
             else: self._tsteady= self._tform+2.*self._ts
         self.hasC= True
 
-    def _evaluate(self,R,phi=0.,t=0.):
+    def _evaluate(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _evaluate
@@ -110,7 +110,7 @@ class SteadyLogSpiralPotential(planarPotential):
                                                    -self._m*(phi-self._omegas*t
                                                              -self._gamma))
 
-    def _Rforce(self,R,phi=0.,t=0.):
+    def _Rforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _Rforce
@@ -140,7 +140,7 @@ class SteadyLogSpiralPotential(planarPotential):
                                          -self._m*(phi-self._omegas*t
                                                    -self._gamma))
        
-    def _phiforce(self,R,phi=0.,t=0.):
+    def _phiforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _phiforce

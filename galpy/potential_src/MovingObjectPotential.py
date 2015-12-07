@@ -72,7 +72,7 @@ class MovingObjectPotential(Potential):
         self.isNonAxi= True
         return None
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _evaluate
@@ -86,7 +86,7 @@ class MovingObjectPotential(Potential):
         OUTPUT:
            Phi(R,z,phi)
         HISTORY:
-           2010104-10 - Started - Bovy (NYU)
+           2010-10-10 - Started - Bovy (NYU)
         """
         #Calculate distance
         dist= _cyldist(R,phi,z,
@@ -94,7 +94,7 @@ class MovingObjectPotential(Potential):
         #Evaluate potential
         return -self._gm*self._softening.potential(dist)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _Rforce
@@ -119,7 +119,7 @@ class MovingObjectPotential(Potential):
         return self._gm*(nu.cos(phi)*xd+nu.sin(phi)*yd)/dist\
             *self._softening(dist)
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _zforce
@@ -143,7 +143,7 @@ class MovingObjectPotential(Potential):
         #Evaluate force
         return self._gm*zd/dist*self._softening(dist)
 
-    def _phiforce(self,R,z,phi=0.,t=0.):
+    def _phiforce(self,R,z,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _phiforce
@@ -168,7 +168,7 @@ class MovingObjectPotential(Potential):
         return self._gm*R*(nu.cos(phi)*yd-nu.sin(phi)*xd)/dist\
             *self._softening(dist)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _dens

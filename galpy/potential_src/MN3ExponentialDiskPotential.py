@@ -107,7 +107,7 @@ class MN3ExponentialDiskPotential(Potential):
         self._nemo_accname= 'MiyamotoNagai+MiyamotoNagai+MiyamotoNagai'
         return None
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -116,18 +116,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0](R,z,phi=phi,t=t)\
-            +self._mn3[1](R,z,phi=phi,t=t)\
-            +self._mn3[2](R,z,phi=phi,t=t)
+        return self._mn3[0](R,z)+self._mn3[1](R,z)\
+            +self._mn3[2](R,z)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -136,18 +133,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].Rforce(R,z,phi=phi,t=t)\
-            +self._mn3[1].Rforce(R,z,phi=phi,t=t)\
-            +self._mn3[2].Rforce(R,z,phi=phi,t=t)
+        return self._mn3[0].Rforce(R,z)+self._mn3[1].Rforce(R,z)\
+            +self._mn3[2].Rforce(R,z)
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -156,18 +150,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].zforce(R,z,phi=phi,t=t)\
-            +self._mn3[1].zforce(R,z,phi=phi,t=t)\
-            +self._mn3[2].zforce(R,z,phi=phi,t=t)
+        return self._mn3[0].zforce(R,z)+self._mn3[1].zforce(R,z)\
+            +self._mn3[2].zforce(R,z)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -176,18 +167,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].dens(R,z,phi=phi,t=t)\
-            +self._mn3[1].dens(R,z,phi=phi,t=t)\
-            +self._mn3[2].dens(R,z,phi=phi,t=t)
+        return self._mn3[0].dens(R,z)+self._mn3[1].dens(R,z)\
+            +self._mn3[2].dens(R,z)
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _R2deriv
@@ -196,18 +184,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].R2deriv(R,z,phi=phi,t=t)\
-            +self._mn3[1].R2deriv(R,z,phi=phi,t=t)\
-            +self._mn3[2].R2deriv(R,z,phi=phi,t=t)
+        return self._mn3[0].R2deriv(R,z)+self._mn3[1].R2deriv(R,z)\
+            +self._mn3[2].R2deriv(R,z)
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -216,18 +201,15 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second vertical derivative
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].z2deriv(R,z,phi=phi,t=t)\
-            +self._mn3[1].z2deriv(R,z,phi=phi,t=t)\
-            +self._mn3[2].z2deriv(R,z,phi=phi,t=t)
+        return self._mn3[0].z2deriv(R,z)+self._mn3[1].z2deriv(R,z)\
+            +self._mn3[2].z2deriv(R,z)
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -236,16 +218,13 @@ class MN3ExponentialDiskPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:
            2015-02-07 - Written - Bovy (IAS)
         """
-        return self._mn3[0].Rzderiv(R,z,phi=phi,t=t)\
-            +self._mn3[1].Rzderiv(R,z,phi=phi,t=t)\
-            +self._mn3[2].Rzderiv(R,z,phi=phi,t=t)
+        return self._mn3[0].Rzderiv(R,z)+self._mn3[1].Rzderiv(R,z)\
+            +self._mn3[2].Rzderiv(R,z)
 
     @kms_to_kpcGyrDecorator
     def _nemo_accpars(self,vo,ro):

@@ -53,7 +53,7 @@ class IsochronePotential(Potential):
         self.hasC= True
         self.hasC_dxdv= True
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -62,8 +62,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -73,7 +71,7 @@ class IsochronePotential(Potential):
         rb= nu.sqrt(r2+self.b2)
         return -1./(self.b+rb)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -82,8 +80,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -94,7 +90,7 @@ class IsochronePotential(Potential):
         dPhidrr= -1./rb/(self.b+rb)**2.
         return dPhidrr*R
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -103,8 +99,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -115,7 +109,7 @@ class IsochronePotential(Potential):
         dPhidrr= -1./rb/(self.b+rb)**2.
         return dPhidrr*z
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _Rderiv
@@ -124,8 +118,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -136,7 +128,7 @@ class IsochronePotential(Potential):
         return -(-self.b**3.-self.b*z**2.+(2.*R**2.-z**2.-self.b**2.)*rb)/\
             rb**3./(self.b+rb)**3.
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -145,8 +137,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -157,7 +147,7 @@ class IsochronePotential(Potential):
         return -(-self.b**3.-self.b*R**2.-(R**2.-2.*z**2.+self.b**2.)*rb)/\
             rb**3./(self.b+rb)**3.
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -166,8 +156,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:
@@ -178,7 +166,7 @@ class IsochronePotential(Potential):
         return -R*z*(self.b+3.*rb)/\
             rb**3./(self.b+rb)**3.
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -187,8 +175,6 @@ class IsochronePotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:

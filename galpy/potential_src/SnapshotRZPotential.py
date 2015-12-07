@@ -73,17 +73,17 @@ class SnapshotRZPotential(Potential):
         return None
     
     @scalarVectorDecorator
-    def _evaluate(self, R,z,phi=None,t=None,dR=None,dphi=None) : 
+    def _evaluate(self, R,z,**kwargs): 
         pot, acc = self._setup_potential(R,z)
         return pot
         
     @scalarVectorDecorator
-    def _Rforce(self, R,z,phi=None,t=None,dR=None,dphi=None) : 
+    def _Rforce(self, R,z,**kwargs):
         pot, acc = self._setup_potential(R,z)
         return acc[:,0]
 
     @scalarVectorDecorator
-    def _zforce(self, R,z,phi=None,t=None,dR=None,dphi=None) : 
+    def _zforce(self, R,z,**kwargs):
         pot, acc = self._setup_potential(R,z)
         return acc[:,1]
 
@@ -448,17 +448,17 @@ class InterpSnapshotRZPotential(interpRZPotential.interpRZPotential) :
        
     @scalarVectorDecorator
     @zsymDecorator(False)
-    def _R2deriv(self,R,Z,phi=0.,t=0.): 
+    def _R2deriv(self,R,Z,**kwargs): 
         return self._R2interp(R,Z)
 
     @scalarVectorDecorator
     @zsymDecorator(False)
-    def _z2deriv(self,R,Z,phi=None,t=None):
+    def _z2deriv(self,R,Z,**kwargs):
         return self._z2interp(R,Z)
 
     @scalarVectorDecorator
     @zsymDecorator(True)
-    def _Rzderiv(self,R,Z,phi=None,t=None):
+    def _Rzderiv(self,R,Z,**kwargs):
         return self._Rzinterp(R,Z)
 
     def normalize(self, R0=8.0) :

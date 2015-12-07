@@ -53,7 +53,7 @@ class PowerSphericalPotential(Potential):
         self.hasC= True
         self.hasC_dxdv= True
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -62,8 +62,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -74,7 +72,7 @@ class PowerSphericalPotential(Potential):
         else:
             return -(R**2.+z**2.)**(1.-self.alpha/2.)/(self.alpha-2.)
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -83,8 +81,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -92,7 +88,7 @@ class PowerSphericalPotential(Potential):
         """
         return -R/(R**2.+z**2.)**(self.alpha/2.)
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -101,8 +97,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -110,7 +104,7 @@ class PowerSphericalPotential(Potential):
         """
         return -z/(R**2.+z**2.)**(self.alpha/2.)
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _Rderiv
@@ -119,8 +113,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -129,7 +121,7 @@ class PowerSphericalPotential(Potential):
         return 1./(R**2.+z**2.)**(self.alpha/2.)\
             -self.alpha*R**2./(R**2.+z**2.)**(self.alpha/2.+1.)
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -138,8 +130,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -147,7 +137,7 @@ class PowerSphericalPotential(Potential):
         """
         return self._R2deriv(z,R) #Spherical potential
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
            _Rzderiv
@@ -156,8 +146,6 @@ class PowerSphericalPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            d2phi/dR/dz
         HISTORY:
@@ -165,7 +153,7 @@ class PowerSphericalPotential(Potential):
         """
         return -self.alpha*R*z*(R**2.+z**2.)**(-1.-self.alpha/2.)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -222,7 +210,7 @@ class KeplerPotential(PowerSphericalPotential):
         PowerSphericalPotential.__init__(self,amp=amp,normalize=normalize,
                                          alpha=3.)
 
-    def _mass(self,R,z=0.,t=0.):
+    def _mass(self,R,z=0.,**kwargs):
         """
         NAME:
            _mass
@@ -231,7 +219,6 @@ class KeplerPotential(PowerSphericalPotential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           t - time
         OUTPUT:
            the mass enclosed
         HISTORY:

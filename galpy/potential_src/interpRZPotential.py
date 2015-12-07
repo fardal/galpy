@@ -309,7 +309,7 @@ class interpRZPotential(Potential):
                                                  
     @scalarVectorDecorator
     @zsymDecorator(False)
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         from galpy.potential import evaluatePotentials
         if self._interpPot:
             out= numpy.empty_like(R)
@@ -333,7 +333,7 @@ class interpRZPotential(Potential):
 
     @scalarVectorDecorator
     @zsymDecorator(False)
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         from galpy.potential import evaluateRforces
         if self._interpRforce:
             out= numpy.empty_like(R)
@@ -357,7 +357,7 @@ class interpRZPotential(Potential):
 
     @scalarVectorDecorator
     @zsymDecorator(True)
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         from galpy.potential import evaluatezforces
         if self._interpzforce:
             out= numpy.empty_like(R)
@@ -381,13 +381,13 @@ class interpRZPotential(Potential):
         else:
             return evaluatezforces(R,z,self._origPot)
     
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         from galpy.potential import evaluateRzderivs
         return evaluateRzderivs(R,z,self._origPot)
     
     @scalarVectorDecorator
     @zsymDecorator(False)
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         from galpy.potential import evaluateDensities
         if self._interpDens:
             out= numpy.empty_like(R)

@@ -117,7 +117,7 @@ class DehnenBarPotential(planarPotential):
         else:
             self._tsteady= self._tform+tsteady*self._tb
 
-    def _evaluate(self,R,phi=0.,t=0.):
+    def _evaluate(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _evaluate
@@ -149,7 +149,7 @@ class DehnenBarPotential(planarPotential):
                                               self._barphi))\
                                               *(self._rb/R)**3.
 
-    def _Rforce(self,R,phi=0.,t=0.):
+    def _Rforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _Rforce
@@ -182,7 +182,7 @@ class DehnenBarPotential(planarPotential):
                                               self._barphi))\
                                               *(self._rb/R)**3./R
         
-    def _phiforce(self,R,phi=0.,t=0.):
+    def _phiforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _phiforce
@@ -215,7 +215,7 @@ class DehnenBarPotential(planarPotential):
                                                  self._barphi))\
                                                  *(self._rb/R)**3.
 
-    def _R2deriv(self,R,phi=0.,t=0.):
+    def _R2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if t < self._tform:
             smooth= 0.
@@ -234,7 +234,7 @@ class DehnenBarPotential(planarPotential):
                                                   self._barphi))\
                                                   *(self._rb/R)**3./R**2.
         
-    def _phi2deriv(self,R,phi=0.,t=0.):
+    def _phi2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if t < self._tform:
             smooth= 0.
@@ -253,7 +253,7 @@ class DehnenBarPotential(planarPotential):
                                                  self._barphi))\
                                                  *(self._rb/R)**3.       
 
-    def _Rphideriv(self,R,phi=0.,t=0.):
+    def _Rphideriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if t < self._tform:
             smooth= 0.

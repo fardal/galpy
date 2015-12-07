@@ -78,7 +78,7 @@ class EllipticalDiskPotential(planarPotential):
             if self._tform is None: self._tsteady= None
             else: self._tsteady= self._tform+2.
 
-    def _evaluate(self,R,phi=0.,t=0.):
+    def _evaluate(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _evaluate
@@ -108,7 +108,7 @@ class EllipticalDiskPotential(planarPotential):
         return smooth*self._twophio/2.*R**self._p\
             *m.cos(2.*(phi-self._phib))
         
-    def _Rforce(self,R,phi=0.,t=0.):
+    def _Rforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _Rforce
@@ -138,7 +138,7 @@ class EllipticalDiskPotential(planarPotential):
         return -smooth*self._p*self._twophio/2.*R**(self._p-1.)\
             *m.cos(2.*(phi-self._phib))
         
-    def _phiforce(self,R,phi=0.,t=0.):
+    def _phiforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _phiforce
@@ -167,7 +167,7 @@ class EllipticalDiskPotential(planarPotential):
             smooth= 1.
         return smooth*self._twophio*R**self._p*m.sin(2.*(phi-self._phib))
 
-    def _R2deriv(self,R,phi=0.,t=0.):
+    def _R2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:
@@ -183,7 +183,7 @@ class EllipticalDiskPotential(planarPotential):
         return smooth*self._p*(self._p-1.)/2.*self._twophio*R**(self._p-2.)\
             *m.cos(2.*(phi-self._phib))
         
-    def _phi2deriv(self,R,phi=0.,t=0.):
+    def _phi2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:
@@ -198,7 +198,7 @@ class EllipticalDiskPotential(planarPotential):
             smooth= 1.
         return -2.*smooth*self._twophio*R**self._p*m.cos(2.*(phi-self._phib))
 
-    def _Rphideriv(self,R,phi=0.,t=0.):
+    def _Rphideriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:

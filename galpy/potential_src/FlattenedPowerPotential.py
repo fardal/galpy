@@ -64,7 +64,7 @@ class FlattenedPowerPotential(Potential):
         self.hasC= True
         self.hasC_dxdv= True
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
            _evaluate
@@ -73,8 +73,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            Phi(R,z)
         HISTORY:
@@ -86,7 +84,7 @@ class FlattenedPowerPotential(Potential):
             m2= self.core2+R**2.+z**2./self.q2
             return -m2**(-self.alpha/2.)/self.alpha
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
            _Rforce
@@ -95,8 +93,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the radial force
         HISTORY:
@@ -108,7 +104,7 @@ class FlattenedPowerPotential(Potential):
             m2= self.core2+R**2.+z**2./self.q2
             return -m2**(-self.alpha/2.-1.)*R
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
            _zforce
@@ -117,8 +113,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the vertical force
         HISTORY:
@@ -130,7 +124,7 @@ class FlattenedPowerPotential(Potential):
             m2= self.core2+R**2.+z**2./self.q2
             return -m2**(-self.alpha/2.-1.)*z/self.q2
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
            _Rderiv
@@ -139,8 +133,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the second radial derivative
         HISTORY:
@@ -153,7 +145,7 @@ class FlattenedPowerPotential(Potential):
             m2= self.core2+R**2.+z**2./self.q2
             return -m2**(-self.alpha/2.-1.)*((self.alpha+2)*R**2./m2-1.)
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
            _z2deriv
@@ -162,8 +154,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t- time
         OUTPUT:
            the second vertical derivative
         HISTORY:
@@ -176,7 +166,7 @@ class FlattenedPowerPotential(Potential):
             m2= self.core2+R**2.+z**2./self.q2
             return -1./self.q2*m2**(-self.alpha/2.-1.)*((self.alpha+2)*z**2./m2/self.q2-1.)
 
-    def _dens(self,R,z,phi=0.,t=0.):
+    def _dens(self,R,z,**kwargs):
         """
         NAME:
            _dens
@@ -185,8 +175,6 @@ class FlattenedPowerPotential(Potential):
         INPUT:
            R - Galactocentric cylindrical radius
            z - vertical height
-           phi - azimuth
-           t - time
         OUTPUT:
            the density
         HISTORY:

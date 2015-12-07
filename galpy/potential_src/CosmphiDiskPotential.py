@@ -82,7 +82,7 @@ class CosmphiDiskPotential(planarPotential):
             if self._tform is None: self._tsteady= None
             else: self._tsteady= self._tform+2.
 
-    def _evaluate(self,R,phi=0.,t=0.):
+    def _evaluate(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _evaluate
@@ -112,7 +112,7 @@ class CosmphiDiskPotential(planarPotential):
         return smooth*self._mphio/self._m*R**self._p\
             *math.cos(self._m*(phi-self._phib))
         
-    def _Rforce(self,R,phi=0.,t=0.):
+    def _Rforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _Rforce
@@ -142,7 +142,7 @@ class CosmphiDiskPotential(planarPotential):
         return -smooth*self._p*self._mphio/self._m*R**(self._p-1.)\
             *math.cos(self._m*(phi-self._phib))
         
-    def _phiforce(self,R,phi=0.,t=0.):
+    def _phiforce(self,R,phi=0.,t=0.,**kwargs):
         """
         NAME:
            _phiforce
@@ -171,7 +171,7 @@ class CosmphiDiskPotential(planarPotential):
             smooth= 1.
         return smooth*self._mphio*R**self._p*math.sin(self._m*(phi-self._phib))
 
-    def _R2deriv(self,R,phi=0.,t=0.):
+    def _R2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:
@@ -187,7 +187,7 @@ class CosmphiDiskPotential(planarPotential):
         return smooth*self._p*(self._p-1.)/self._m*self._mphio*R**(self._p-2.)\
             *math.cos(self._m*(phi-self._phib))
         
-    def _phi2deriv(self,R,phi=0.,t=0.):
+    def _phi2deriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:
@@ -202,7 +202,7 @@ class CosmphiDiskPotential(planarPotential):
             smooth= 1.
         return -self._m*smooth*self._mphio*R**self._p*math.cos(self._m*(phi-self._phib))
 
-    def _Rphideriv(self,R,phi=0.,t=0.):
+    def _Rphideriv(self,R,phi=0.,t=0.,**kwargs):
         #Calculate relevant time
         if not self._tform is None:
             if t < self._tform:

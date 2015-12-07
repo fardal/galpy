@@ -58,7 +58,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
         self.hasC      = True
         self.hasC_dxdv = True
 
-    def _evaluate(self,R,z,phi=0.,t=0.):
+    def _evaluate(self,R,z,**kwargs):
         """
         NAME:
             _evaluate
@@ -67,8 +67,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t - time
         OUTPUT:
             Phi(R,z)
         HISTORY:
@@ -77,7 +75,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
         l,n = bovy_coords.Rz_to_lambdanu(R,z,ac=self._ac,Delta=self._Delta)
         return -1./(nu.sqrt(l) + nu.sqrt(n))
 
-    def _Rforce(self,R,z,phi=0.,t=0.):
+    def _Rforce(self,R,z,**kwargs):
         """
         NAME:
             _Rforce
@@ -86,8 +84,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t - time
         OUTPUT:
             the radial force = -dphi/dR
         HISTORY:
@@ -101,7 +97,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
                   dndR * self._nderiv(l,n))
    
 
-    def _zforce(self,R,z,phi=0.,t=0.):
+    def _zforce(self,R,z,**kwargs):
         """
         NAME:
             _zforce
@@ -110,8 +106,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t - time
         OUTPUT:
             the vertical force
         HISTORY:
@@ -124,7 +118,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
         return - (dldz * self._lderiv(l,n) + \
                   dndz * self._nderiv(l,n))
 
-    def _R2deriv(self,R,z,phi=0.,t=0.):
+    def _R2deriv(self,R,z,**kwargs):
         """
         NAME:
             _R2deriv
@@ -133,8 +127,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t - time
         OUTPUT:
             the second radial derivative
         HISTORY:
@@ -153,7 +145,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
                (dndR)**2    * self._n2deriv(l,n) + \
                2.*dldR*dndR * self._lnderiv(l,n)
 
-    def _z2deriv(self,R,z,phi=0.,t=0.):
+    def _z2deriv(self,R,z,**kwargs):
         """
         NAME:
             _z2deriv
@@ -162,8 +154,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t- time
         OUTPUT:
             the second vertical derivative
         HISTORY:
@@ -183,7 +173,7 @@ class KuzminKutuzovStaeckelPotential(Potential):
                2.*dldz*dndz * self._lnderiv(l,n)
 
 
-    def _Rzderiv(self,R,z,phi=0.,t=0.):
+    def _Rzderiv(self,R,z,**kwargs):
         """
         NAME:
             _Rzderiv
@@ -192,8 +182,6 @@ class KuzminKutuzovStaeckelPotential(Potential):
         INPUT:
             R - Galactocentric cylindrical radius
             z - vertical height
-            phi - azimuth
-            t- time
         OUTPUT:
             d2phi/dR/dz
         HISTORY:
