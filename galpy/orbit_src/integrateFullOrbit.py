@@ -53,6 +53,9 @@ def _parse_pot(pot,potforactions=False):
         elif isinstance(p,potential.HernquistPotential):
             pot_type.append(8)
             pot_args.extend([p._amp,p.a])
+        elif isinstance(p,potential.FlattenedNFWPotential):
+            pot_type.append(91)
+            pot_args.extend([p._amp,p.a,p.q])
         elif isinstance(p,potential.NFWPotential):
             pot_type.append(9)
             pot_args.extend([p._amp,p.a])

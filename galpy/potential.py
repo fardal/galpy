@@ -9,6 +9,7 @@ from galpy.potential_src import DoubleExponentialDiskPotential
 from galpy.potential_src import PowerSphericalPotential
 from galpy.potential_src import PowerSphericalPotentialwCutoff
 from galpy.potential_src import TwoPowerSphericalPotential
+from galpy.potential_src import FlattenedNFWPotential #maf
 from galpy.potential_src import plotRotcurve
 from galpy.potential_src import plotEscapecurve
 from galpy.potential_src import KGPotential
@@ -77,6 +78,7 @@ KeplerPotential= PowerSphericalPotential.KeplerPotential
 PowerSphericalPotential= PowerSphericalPotential.PowerSphericalPotential
 PowerSphericalPotentialwCutoff= PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff
 NFWPotential= TwoPowerSphericalPotential.NFWPotential
+FlattenedNFWPotential= FlattenedNFWPotential.FlattenedNFWPotential
 JaffePotential= TwoPowerSphericalPotential.JaffePotential
 HernquistPotential= TwoPowerSphericalPotential.HernquistPotential
 TwoPowerSphericalPotential= TwoPowerSphericalPotential.TwoPowerSphericalPotential
