@@ -16,6 +16,7 @@ from galpy.util import galpyWarning
 _INTERPDURINGSETUP= True
 _USEINTERP= True
 _USESIMPLE= True
+_TWOPIWRAPS= numpy.arange(5)*2.*numpy.pi
 _labelDict= {'x': r'$X$',
              'y': r'$Y$',
              'z': r'$Z$',
@@ -32,12 +33,13 @@ _labelDict= {'x': r'$X$',
              'pmll':r'$\mu_l\,(\mathrm{mas\,yr}^{-1})$',
              'pmbb':r'$\mu_b\,(\mathrm{mas\,yr}^{-1})$',
              'vlos':r'$V_{\mathrm{los}}\,(\mathrm{km\,s}^{-1})$'}
-class streamdf:
+class streamdf(object):
     """The DF of a tidal stream"""
     def __init__(self,sigv,progenitor=None,pot=None,aA=None,
                  tdisrupt=None,sigMeanOffset=6.,leading=True,
                  sigangle=None,
                  deltaAngleTrack=None,nTrackChunks=None,nTrackIterations=None,
+                 progIsTrack=False,
                  Vnorm=220.,Rnorm=8.,
                  R0=8.,Zsun=0.025,vsun=[-11.1,8.*30.24,7.25],
                  multi=None,interpTrack=_INTERPDURINGSETUP,
@@ -61,6 +63,8 @@ class streamdf:
                            if False, model the trailing part
 
            progenitor= progenitor orbit as Orbit instance (will be re-integrated, so don't bother integrating the orbit before)
+
+           progIsTrack= (False) if True, then the progenitor (x,v) is actually the (x,v) of the stream track at zero angle separation; useful when initializing with an orbit fit; the progenitor's position will be calculated
 
            pot= Potential instance or list thereof
 
@@ -129,14 +133,34 @@ class streamdf:
         self._aA= aA
         if not self._aA._pot == self._pot:
             raise IOError("Potential in aA does not appear to be the same as given potential pot")
-        self._progenitor= progenitor() #call to get new Orbit
-        # Make sure we do not use physical coordinates
-        self._progenitor.turn_physical_off()
         if (multi is True):   #if set to boolean, enable cpu_count processes
             self._multi= multiprocessing.cpu_count()
         else:
             self._multi= multi
+        self._progenitor_setup(progenitor,leading)
+        self._offset_setup(sigangle,leading,deltaAngleTrack)
+        # if progIsTrack, calculate the progenitor that gives a track that is approximately the given orbit
+        if progIsTrack:
+            self._setup_progIsTrack()
+        self._setup_coord_transform(Rnorm,Vnorm,R0,Zsun,vsun,progenitor)
+        #Determine the stream track
+        if not nosetup:
+            self._determine_nTrackIterations(nTrackIterations)
+            self._determine_stream_track(nTrackChunks)
+            self._useInterp= useInterp
+            if interpTrack or self._useInterp:
+                self._interpolate_stream_track()
+                self._interpolate_stream_track_aA()
+            self.calc_stream_lb()
+            self._determine_stream_spread()
+        return None
+
+    def _progenitor_setup(self,progenitor,leading):
+        """The part of the setup relating to the progenitor's orbit"""
         #Progenitor orbit: Calculate actions, frequencies, and angles for the progenitor
+        self._progenitor= progenitor() #call to get new Orbit
+        # Make sure we do not use physical coordinates
+        self._progenitor.turn_physical_off()
         acfs= self._aA.actionsFreqsAngles(self._progenitor,maxn=3,
                                     _firstFlip=(not leading))
         self._progenitor_jr= acfs[0][0]
@@ -155,6 +179,10 @@ class streamdf:
                                self._aA,dxv=None,dOdJ=True,
                                _initacfs=acfs)
         self._dOdJpEig= numpy.linalg.eig(self._dOdJp)
+        return None
+
+    def _offset_setup(self,sigangle,leading,deltaAngleTrack):
+        """The part of the setup related to calculating the stream/progenitor offset"""
         #From the progenitor orbit, determine the sigmas in J and angle
         self._sigjr= (self._progenitor.rap()-self._progenitor.rperi())/numpy.pi*self._sigv
         self._siglz= self._progenitor.rperi()*self._sigv
@@ -203,7 +231,6 @@ class streamdf:
             fast_cholesky_invert(self._sigomatrix/self._sigomatrixNorm,
                                  tiny=10.**-15.,logdet=True)
         self._sigomatrixinv/= self._sigomatrixNorm
-
         deltaAngleTrackLim = (self._sigMeanOffset+4.) * numpy.sqrt(
             self._sortedSigOEig[2]) * self._tdisrupt
         if (deltaAngleTrack is None):  
@@ -211,6 +238,10 @@ class streamdf:
         else:
             if (deltaAngleTrack > deltaAngleTrackLim):
                 warnings.warn("WARNING: angle range large compared to plausible value.", galpyWarning)
+        self._deltaAngleTrack= deltaAngleTrack
+        return None
+
+    def _setup_coord_transform(self,Rnorm,Vnorm,R0,Zsun,vsun,progenitor):
         #Set the coordinate-transformation parameters; check that these do not conflict with those in the progenitor orbit object; need to use the original, since this objects _progenitor has physical turned off
         if progenitor._roSet \
                 and (numpy.fabs(Rnorm-progenitor._orb._ro) > 10.**-.8 \
@@ -224,23 +255,41 @@ class streamdf:
             warnings.warn("Warning: progenitor's zo does not agree with streamdf's Zsun; this may have unexpected consequences when projecting into observables", galpyWarning)
         if (progenitor._roSet or progenitor._voSet) \
                 and numpy.any(numpy.fabs(vsun-numpy.array([0.,Vnorm,0.])\
-                                    -progenitor._orb._solarmotion) > 10.**-8.):
+                                             -progenitor._orb._solarmotion) > 10.**-8.):
             warnings.warn("Warning: progenitor's solarmotion does not agree with streamdf's vsun (after accounting for Vnorm); this may have unexpected consequences when projecting into observables", galpyWarning)
         self._Vnorm= Vnorm
         self._Rnorm= Rnorm
         self._R0= R0
         self._Zsun= Zsun
         self._vsun= vsun
-        #Determine the stream track
-        if not nosetup:
-            self._determine_nTrackIterations(nTrackIterations)
-            self._determine_stream_track(deltaAngleTrack,nTrackChunks)
-            self._useInterp= useInterp
-            if interpTrack or self._useInterp:
-                self._interpolate_stream_track()
-                self._interpolate_stream_track_aA()
-            self.calc_stream_lb()
-            self._determine_stream_spread()
+        return None
+
+    def _setup_progIsTrack(self):
+        """If progIsTrack, the progenitor orbit that was passed to the 
+        streamdf initialization is the track at zero angle separation;
+        this routine computes an actual progenitor position that gives
+        the desired track given the parameters of the streamdf"""
+        # We need to flip the sign of the offset, to go to the progenitor
+        self._sigMeanSign*= -1.
+        # Use _determine_stream_track_single to calculate the track-progenitor
+        # offset at zero angle separation
+        prog_stream_offset=\
+            _determine_stream_track_single(self._aA,
+                                           self._progenitor,
+                                           0., #time = 0
+                                           self._progenitor_angle,
+                                           self._sigMeanSign,
+                                           self._dsigomeanProgDirection,
+                                           self.meanOmega,
+                                           0.) #angle = 0
+        # Setup the new progenitor orbit
+        progenitor= Orbit(prog_stream_offset[3])
+        # Flip the offset sign again
+        self._sigMeanSign*= -1.
+        # Now re-do the previous setup
+        self._progenitor_setup(progenitor,self._leading)
+        self._offset_setup(self._sigangle,self._leading,
+                           self._deltaAngleTrack)
         return None
 
     def misalignment(self,isotropic=False):
@@ -378,11 +427,7 @@ class streamdf:
                  or d2.lower() == 'dist' or d2.lower() == 'pmll' 
                  or d2.lower() == 'pmbb' or d2.lower() == 'vlos'):
             self.calc_stream_lb()
-        if kwargs.has_key('scaleToPhysical'):
-            phys= kwargs['scaleToPhysical']
-            kwargs.pop('scaleToPhysical')
-        else:
-            phys= False
+        phys= kwargs.pop('scaleToPhysical',False)
         tx= self._parse_track_dim(d1,interp=interp,phys=phys)
         ty= self._parse_track_dim(d2,interp=interp,phys=phys)
         bovy_plot.bovy_plot(tx,ty,*args,
@@ -392,27 +437,17 @@ class streamdf:
         if spread:
             addx, addy= self._parse_track_spread(d1,d2,interp=interp,phys=phys,
                                                  simple=simple)
-            if (kwargs.has_key('ls') and kwargs['ls'] == 'none') \
-                    or (kwargs.has_key('linestyle') \
+            if ('ls' in kwargs and kwargs['ls'] == 'none') \
+                    or ('linestyle' in kwargs \
                             and kwargs['linestyle'] == 'none'):
-                if kwargs.has_key('ls'): kwargs.pop('ls')
-                if kwargs.has_key('linestyle'): kwargs.pop('linestyle')
+                kwargs.pop('ls',None)
+                kwargs.pop('linestyle',None)
                 spreadls= 'none'
             else:
                 spreadls= '-.'
-            if kwargs.has_key('marker'):
-                spreadmarker= kwargs['marker']
-                kwargs.pop('marker')
-            else:
-                spreadmarker= None
-            if kwargs.has_key('color'):
-                spreadcolor= kwargs['color']
-            else:
-                spreadcolor= None
-            if kwargs.has_key('lw'):
-                spreadlw= kwargs['lw']
-            else:
-                spreadlw= 1.
+            spreadmarker= kwargs.pop('marker',None)
+            spreadcolor= kwargs.pop('color',None)
+            spreadlw= kwargs.pop('lw',1.)
             bovy_plot.bovy_plot(tx+spread*addx,ty+spread*addy,ls=spreadls,
                                 marker=spreadmarker,color=spreadcolor,
                                 lw=spreadlw,
@@ -456,11 +491,7 @@ class streamdf:
                                           < self._trackts[self._nTrackChunks-1]]
         obs= [self._R0,0.,self._Zsun]
         obs.extend(self._vsun)
-        if kwargs.has_key('scaleToPhysical'):
-            phys= kwargs['scaleToPhysical']
-            kwargs.pop('scaleToPhysical')
-        else:
-            phys= False
+        phys= kwargs.pop('scaleToPhysical',False)
         tx= self._parse_progenitor_dim(d1,tts,ro=self._Rnorm,vo=self._Vnorm,
                                        obs=obs,phys=phys)
         ty= self._parse_progenitor_dim(d2,tts,ro=self._Rnorm,vo=self._Vnorm,
@@ -752,15 +783,16 @@ class streamdf:
             self.nTrackIterations= 2
         return None
 
-    def _determine_stream_track(self,deltaAngleTrack,nTrackChunks):
+    def _determine_stream_track(self,nTrackChunks):
         """Determine the track of the stream in real space"""
         #Determine how much orbital time is necessary for the progenitor's orbit to cover the stream
-        self._deltaAngleTrack= deltaAngleTrack
         if nTrackChunks is None:
             #default is floor(self._deltaAngleTrack/0.15)+1
             self._nTrackChunks= int(numpy.floor(self._deltaAngleTrack/0.15))+1
         else:
             self._nTrackChunks= nTrackChunks
+        if not hasattr(self,'nInterpolatedTrackChunks'):
+            self.nInterpolatedTrackChunks= 1001
         dt= self._deltaAngleTrack\
             /self._progenitor_Omega_along_dOmega
         self._trackts= numpy.linspace(0.,2*dt,2*self._nTrackChunks-1) #to be sure that we cover it
@@ -786,7 +818,7 @@ class streamdf:
             auxiliaryTrack._orb.orbit[:,2]= -auxiliaryTrack._orb.orbit[:,2]
             auxiliaryTrack._orb.orbit[:,4]= -auxiliaryTrack._orb.orbit[:,4]
         #Calculate the actions, frequencies, and angle for this auxiliary orbit
-        acfs= self._aA.actionsFreqs(auxiliaryTrack(),maxn=3)
+        acfs= self._aA.actionsFreqs(auxiliaryTrack(0.),maxn=3)
         auxiliary_Omega= numpy.array([acfs[3],acfs[4],acfs[5]]).reshape(3\
 )
         auxiliary_Omega_along_dOmega= \
@@ -1120,7 +1152,8 @@ class streamdf:
                                                      TrackvZ,k=3)
         #Now store an interpolated version of the stream track
         self._interpolatedThetasTrack=\
-            numpy.linspace(0.,self._deltaAngleTrack,1001)
+            numpy.linspace(0.,self._deltaAngleTrack,
+                           self.nInterpolatedTrackChunks)
         self._interpolatedObsTrackXY= numpy.empty((len(self._interpolatedThetasTrack),6))
         self._interpolatedObsTrackXY[:,0]=\
             self._interpTrackX(self._interpolatedThetasTrack)
@@ -1478,9 +1511,12 @@ class streamdf:
            2013-12-22 - Written - Bovy (IAS)
         """
         #Calculate angle offset along the stream parallel to the stream track
-        angle= numpy.hstack((ar,ap,az))
-        da= angle-self._progenitor_angle
-        dapar= self._sigMeanSign*numpy.sum(da*self._dsigomeanProgDirection)
+        da= numpy.vstack((ar+_TWOPIWRAPS-self._progenitor_angle[0],
+                          ap+_TWOPIWRAPS-self._progenitor_angle[1],
+                          az+_TWOPIWRAPS-self._progenitor_angle[2])).T
+        dapar= numpy.amin(numpy.fabs(\
+                self._sigMeanSign\
+                    *numpy.dot(da,self._dsigomeanProgDirection)))
         if interp:
             dist= numpy.fabs(dapar-self._interpolatedThetasTrack)
         else:
@@ -1488,7 +1524,37 @@ class streamdf:
         return numpy.argmin(dist)
 
 #########DISTRIBUTION AS A FUNCTION OF ANGLE ALONG THE STREAM##################
-    def meanOmega(self,dangle,oned=False):
+    def density_par(self,dangle,tdisrupt=None):
+        """
+        NAME:
+
+           density_par
+
+        PURPOSE:
+
+           calculate the density as a function of parallel angle, assuming a uniform time distribution up to a maximum time
+
+        INPUT:
+
+           dangle - angle offset
+
+        OUTPUT:
+
+           density(angle)
+
+        HISTORY:
+
+           2015-11-17 - Written - Bovy (UofT)
+
+        """
+        if tdisrupt is None: tdisrupt= self._tdisrupt
+        dOmin= dangle/tdisrupt
+        # Normalize to 1 close to progenitor
+        return 0.5*(1.+special.erf((self._meandO-dOmin)\
+                                       /numpy.sqrt(2.*self._sortedSigOEig[2])))
+
+    def meanOmega(self,dangle,oned=False,offset_sign=None,
+                  tdisrupt=None):
         """
         NAME:
 
@@ -1504,6 +1570,8 @@ class streamdf:
 
            oned= (False) if True, return the 1D offset from the progenitor (along the direction of disruption)
 
+           offset_sign= sign of the frequency offset (shouldn't be set)
+
         OUTPUT:
 
            mean Omega
@@ -1513,7 +1581,9 @@ class streamdf:
            2013-12-01 - Written - Bovy (IAS)
 
         """
-        dOmin= dangle/self._tdisrupt
+        if offset_sign is None: offset_sign= self._sigMeanSign
+        if tdisrupt is None: tdisrupt= self._tdisrupt
+        dOmin= dangle/tdisrupt
         meandO= self._meandO
         dO1D= ((numpy.sqrt(2./numpy.pi)*numpy.sqrt(self._sortedSigOEig[2])\
                    *numpy.exp(-0.5*(meandO-dOmin)**2.\
@@ -1524,7 +1594,7 @@ class streamdf:
         if oned: return dO1D
         else:
             return self._progenitor_Omega+dO1D*self._dsigomeanProgDirection\
-                *self._sigMeanSign
+                *offset_sign
 
     def sigOmega(self,dangle):
         """
@@ -1802,7 +1872,7 @@ class streamdf:
         return out
 
 ################APPROXIMATE FREQUENCY-ANGLE TRANSFORMATION#####################
-    def _approxaA(self,R,vR,vT,z,vz,phi,interp=True):
+    def _approxaA(self,R,vR,vT,z,vz,phi,interp=True,cindx=None):
         """
         NAME:
            _approxaA
@@ -1812,10 +1882,12 @@ class streamdf:
         INPUT:
            R,vR,vT,z,vz,phi - phase-space coordinates of the given point
            interp= (True), if True, use the interpolated track
+           cindx= index of the closest point on the (interpolated) stream track if not given, determined from the dimensions given          
         OUTPUT:
            (Or,Op,Oz,ar,ap,az)
         HISTORY:
            2013-12-03 - Written - Bovy (IAS)
+           2015-11-12 - Added weighted sum of two nearest Jacobians to help with smoothness - Bovy (UofT)
         """
         if isinstance(R,(int,float,numpy.float32,numpy.float64)): #Scalar input
             R= numpy.array([R])
@@ -1824,11 +1896,17 @@ class streamdf:
             z= numpy.array([z])
             vz= numpy.array([vz])
             phi= numpy.array([phi])
-        closestIndx= [self._find_closest_trackpoint(R[ii],vR[ii],vT[ii],
-                                                    z[ii],vz[ii],phi[ii],
-                                                    interp=interp,
-                                                    xy=False) 
-                      for ii in range(len(R))]
+        X= R*numpy.cos(phi)
+        Y= R*numpy.sin(phi)
+        Z= z
+        if cindx is None:
+            closestIndx= [self._find_closest_trackpoint(X[ii],Y[ii],Z[ii],
+                                                        z[ii],vz[ii],phi[ii],
+                                                        interp=interp,
+                                                        xy=True,usev=False) 
+                          for ii in range(len(R))]
+        else:
+            closestIndx= cindx
         out= numpy.empty((6,len(R)))
         for ii in range(len(R)):
             dxv= numpy.empty(6)
@@ -1851,13 +1929,43 @@ class streamdf:
                 dxv[4]= vz[ii]-self._ObsTrack[closestIndx[ii],4]
                 dxv[5]= phi[ii]-self._ObsTrack[closestIndx[ii],5]
                 jacIndx= closestIndx[ii]
+            # Find 2nd closest Jacobian point for smoothing
+            dmJacIndx= (X[ii]-self._ObsTrackXY[jacIndx,0])**2.\
+                +(Y[ii]-self._ObsTrackXY[jacIndx,1])**2.\
+                +(Z[ii]-self._ObsTrackXY[jacIndx,2])**2.
+            if jacIndx == 0:
+                jacIndx2= jacIndx+1
+                dmJacIndx2= (X[ii]-self._ObsTrackXY[jacIndx+1,0])**2.\
+                    +(Y[ii]-self._ObsTrackXY[jacIndx+1,1])**2.\
+                    +(Z[ii]-self._ObsTrackXY[jacIndx+1,2])**2.
+            elif jacIndx == self._nTrackChunks-1:
+                jacIndx2= jacIndx-1
+                dmJacIndx2= (X[ii]-self._ObsTrackXY[jacIndx-1,0])**2.\
+                    +(Y[ii]-self._ObsTrackXY[jacIndx-1,1])**2.\
+                    +(Z[ii]-self._ObsTrackXY[jacIndx-1,2])**2.
+            else:
+                dm1= (X[ii]-self._ObsTrackXY[jacIndx-1,0])**2.\
+                    +(Y[ii]-self._ObsTrackXY[jacIndx-1,1])**2.\
+                    +(Z[ii]-self._ObsTrackXY[jacIndx-1,2])**2.
+                dm2= (X[ii]-self._ObsTrackXY[jacIndx+1,0])**2.\
+                    +(Y[ii]-self._ObsTrackXY[jacIndx+1,1])**2.\
+                    +(Z[ii]-self._ObsTrackXY[jacIndx+1,2])**2.
+                if dm1 < dm2:
+                    jacIndx2= jacIndx-1
+                    dmJacIndx2= dm1
+                else:
+                    jacIndx2= jacIndx+1
+                    dmJacIndx2= dm2
+            ampJacIndx= numpy.sqrt(dmJacIndx)/(numpy.sqrt(dmJacIndx)\
+                                                   +numpy.sqrt(dmJacIndx2))
             #Make sure phi hasn't wrapped around
             if dxv[5] > numpy.pi:
                 dxv[5]-= 2.*numpy.pi
             elif dxv[5] < -numpy.pi:
                 dxv[5]+= 2.*numpy.pi
-            #Apply closest jacobian
-            out[:,ii]= numpy.dot(self._alljacsTrack[jacIndx,:,:],
+            #Apply closest jacobians
+            out[:,ii]= numpy.dot((1.-ampJacIndx)*self._alljacsTrack[jacIndx,:,:]
+                                 +ampJacIndx*self._alljacsTrack[jacIndx2,:,:],
                                  dxv)
             if interp:
                 out[:,ii]+= self._interpolatedObsTrackAA[closestIndx[ii]]
@@ -1914,6 +2022,30 @@ class streamdf:
                 dOa[4]= ap[ii]-self._ObsTrackAA[closestIndx[ii],4]
                 dOa[5]= az[ii]-self._ObsTrackAA[closestIndx[ii],5]
                 jacIndx= closestIndx[ii]
+            # Find 2nd closest Jacobian point for smoothing
+            da= numpy.vstack((ar[ii]+_TWOPIWRAPS-self._progenitor_angle[0],
+                              ap[ii]+_TWOPIWRAPS-self._progenitor_angle[1],
+                              az[ii]+_TWOPIWRAPS-self._progenitor_angle[2])).T
+            dapar= numpy.amin(numpy.fabs(\
+                    self._sigMeanSign\
+                        *numpy.dot(da,self._dsigomeanProgDirection)))
+            dmJacIndx= numpy.fabs(dapar-self._thetasTrack[jacIndx])
+            if jacIndx == 0:
+                jacIndx2= jacIndx+1
+                dmJacIndx2= numpy.fabs(dapar-self._thetasTrack[jacIndx+1])
+            elif jacIndx == self._nTrackChunks-1:
+                jacIndx2= jacIndx-1
+                dmJacIndx2= numpy.fabs(dapar-self._thetasTrack[jacIndx-1])
+            else:
+                dm1= numpy.fabs(dapar-self._thetasTrack[jacIndx-1])
+                dm2= numpy.fabs(dapar-self._thetasTrack[jacIndx+1])
+                if dm1 < dm2:
+                    jacIndx2= jacIndx-1
+                    dmJacIndx2= dm1
+                else:
+                    jacIndx2= jacIndx+1
+                    dmJacIndx2= dm2
+            ampJacIndx= dmJacIndx/(dmJacIndx+dmJacIndx2)
             #Make sure the angles haven't wrapped around
             if dOa[3] > numpy.pi:
                 dOa[3]-= 2.*numpy.pi
@@ -1928,7 +2060,8 @@ class streamdf:
             elif dOa[5] < -numpy.pi:
                 dOa[5]+= 2.*numpy.pi
             #Apply closest jacobian
-            out[:,ii]= numpy.dot(self._allinvjacsTrack[jacIndx,:,:],
+            out[:,ii]= numpy.dot((1.-ampJacIndx)*self._allinvjacsTrack[jacIndx,:,:]
+                                 +ampJacIndx*self._allinvjacsTrack[jacIndx2,:,:],
                                  dOa)
             if interp:
                 out[:,ii]+= self._interpolatedObsTrack[closestIndx[ii]]
@@ -1985,11 +2118,7 @@ class streamdf:
 
         """
         #First parse log
-        if kwargs.has_key('log'):
-            log= kwargs['log']
-            kwargs.pop('log')
-        else:
-            log= True
+        log= kwargs.pop('log',True)
         dOmega, dangle= self.prepData4Call(*args,**kwargs)
         #Omega part
         dOmega4dfOmega= dOmega\
@@ -2044,14 +2173,11 @@ class streamdf:
     def _parse_call_args(self,*args,**kwargs):
         """Helper function to parse the arguments to the __call__ and related functions,
         return [6,nobj] array of frequencies (:3) and angles (3:)"""
-        if kwargs.has_key('interp'):
-            interp= kwargs['interp']
-        else:
-            interp= self._useInterp
+        interp= kwargs.get('interp',self._useInterp)
         if len(args) == 5:
             raise IOError("Must specify phi for streamdf")
         elif len(args) == 6:
-            if kwargs.has_key('aAInput') and kwargs['aAInput']:
+            if kwargs.get('aAInput',False):
                 if isinstance(args[0],(int,float,numpy.float32,numpy.float64)):
                     out= numpy.empty((6,1))
                 else:
@@ -2127,14 +2253,8 @@ class streamdf:
         gaussmean, gaussvar= self.gaussApprox(xy,**kwargs)
         cholvar, chollower= stable_cho_factor(gaussvar)
         #Now Gauss-legendre integrate over missing directions
-        if kwargs.has_key('ngl'):
-            ngl= kwargs['ngl']
-        else:
-            ngl= 5
-        if kwargs.has_key('nsigma'):
-            nsigma= kwargs['nsigma']
-        else:
-            nsigma= 3
+        ngl= kwargs.get('ngl',5)
+        nsigma= kwargs.get('nsigma',3)
         glx, glw= numpy.polynomial.legendre.leggauss(ngl)
         coordEval= []
         weightEval= []
@@ -2186,28 +2306,13 @@ class streamdf:
             jj+= 1
         iXw, iYw, iZw, ivXw, ivYw, ivZw=\
             numpy.meshgrid(*weightEval,indexing='ij')
-        if kwargs.has_key('lb') and kwargs['lb']: #Convert to Galactocentric cylindrical coordinates
+        if kwargs.get('lb',False): #Convert to Galactocentric cylindrical coordinates
             #Setup coordinate transformation kwargs
-            if not kwargs.has_key('Vnorm'):
-                Vnorm= self._Vnorm
-            else:
-                Vnorm= kwargs['Vnorm']
-            if not kwargs.has_key('Rnorm'):
-                Rnorm= self._Rnorm
-            else:
-                Rnorm= kwargs['Rnorm']
-            if not kwargs.has_key('R0'):
-                R0= self._R0
-            else:
-                R0= kwargs['R0']
-            if not kwargs.has_key('Zsun'):
-                Zsun= self._Zsun
-            else:
-                Zsun= kwargs['Zsun']
-            if not kwargs.has_key('vsun'):
-                vsun= self._vsun
-            else:
-                vsun= kwargs['vsun']
+            Vnorm= kwargs.get('Vnorm',self._Vnorm)
+            Rnorm= kwargs.get('Rnorm',self._Rnorm)
+            R0= kwargs.get('R0',self._R0)
+            Zsun= kwargs.get('Zsun',self._Zsun)
+            vsun= kwargs.get('vsun',self._vsun)
             tXYZ= bovy_coords.lbd_to_XYZ(iX.flatten(),iY.flatten(),
                                          iZ.flatten(),
                                          degree=True)
@@ -2239,13 +2344,10 @@ class streamdf:
                                             ivZ.flatten(),
                                             iR,iphi,iZ,cyl=True)
         #Add the additional Jacobian dXdY/dldb... if necessary
-        if kwargs.has_key('lb') and kwargs['lb']:
+        if kwargs.get('lb',False):
             #Find the nearest track point
-            if kwargs.has_key('interp'):
-                interp= kwargs['interp']
-            else:
-                interp= self._useInterp
-            if not kwargs.has_key('cindx'):
+            interp= kwargs.get('interp',self._useInterp)
+            if not 'cindx' in kwargs:
                 cindx= self._find_closest_trackpointLB(*xy,interp=interp,
                                                         usev=True)
             else:
@@ -2298,22 +2400,16 @@ class streamdf:
            2013-12-12 - Written - Bovy (IAS)
 
         """
-        if kwargs.has_key('interp'):
-            interp= kwargs['interp']
-        else:
-            interp= self._useInterp
-        if kwargs.has_key('lb'):
-            lb= kwargs['lb']
-        else:
-            lb= False
+        interp= kwargs.get('interp',self._useInterp)
+        lb= kwargs.get('lb',False)
         #What are we looking for
         coordGiven= numpy.array([not x is None for x in xy],dtype='bool')
         nGiven= numpy.sum(coordGiven)
         #First find the nearest track point
-        if not kwargs.has_key('cindx') and lb:
+        if not 'cindx' in kwargs and lb:
             cindx= self._find_closest_trackpointLB(*xy,interp=interp,
                                                   usev=True)
-        elif not kwargs.has_key('cindx') and not lb:
+        elif not 'cindx' in kwargs and not lb:
             cindx= self._find_closest_trackpoint(*xy,xy=True,interp=interp,
                                                   usev=True)
         else:
@@ -2408,29 +2504,7 @@ class streamdf:
         if interp is None:
             interp= self._useInterp
         #First sample frequencies
-        #Sample frequency along largest eigenvalue using ARS
-        dO1s=\
-            bovy_ars.bovy_ars([0.,0.],[True,False],
-                              [self._meandO-numpy.sqrt(self._sortedSigOEig[2]),
-                               self._meandO+numpy.sqrt(self._sortedSigOEig[2])],
-                              _h_ars,_hp_ars,nsamples=n,
-                              hxparams=(self._meandO,self._sortedSigOEig[2]),
-                              maxn=100)
-        dO1s= numpy.array(dO1s)*self._sigMeanSign
-        dO2s= numpy.random.normal(size=n)*numpy.sqrt(self._sortedSigOEig[1])
-        dO3s= numpy.random.normal(size=n)*numpy.sqrt(self._sortedSigOEig[0])
-        #Rotate into dOs in R,phi,z coordinates
-        dO= numpy.vstack((dO3s,dO2s,dO1s))
-        dO= numpy.dot(self._sigomatrixEig[1][:,self._sigomatrixEigsortIndx],
-                      dO)
-        Om= dO+numpy.tile(self._progenitor_Omega.T,(n,1)).T
-        #Also generate angles
-        da= numpy.random.normal(size=(3,n))*self._sigangle
-        #And a random time
-        dt= numpy.random.uniform(size=n)*self._tdisrupt
-        #Integrate the orbits relative to the progenitor
-        da+= dO*numpy.tile(dt,(3,1))
-        angle= da+numpy.tile(self._progenitor_angle.T,(n,1)).T
+        Om,angle,dt= self._sample_aAt(n)
         if returnaAdt:
             return (Om,angle,dt)
         #Propagate to R,vR,etc.
@@ -2498,6 +2572,48 @@ class streamdf:
                 return (out,dt)
             else:
                 return out
+
+    def _sample_aAt(self,n):
+        """Sampling frequencies, angles, and times part of sampling"""
+        #Sample frequency along largest eigenvalue using ARS
+        dO1s=\
+            bovy_ars.bovy_ars([0.,0.],[True,False],
+                              [self._meandO-numpy.sqrt(self._sortedSigOEig[2]),
+                               self._meandO+numpy.sqrt(self._sortedSigOEig[2])],
+                              _h_ars,_hp_ars,nsamples=n,
+                              hxparams=(self._meandO,self._sortedSigOEig[2]),
+                              maxn=100)
+        dO1s= numpy.array(dO1s)*self._sigMeanSign
+        dO2s= numpy.random.normal(size=n)*numpy.sqrt(self._sortedSigOEig[1])
+        dO3s= numpy.random.normal(size=n)*numpy.sqrt(self._sortedSigOEig[0])
+        #Rotate into dOs in R,phi,z coordinates
+        dO= numpy.vstack((dO3s,dO2s,dO1s))
+        dO= numpy.dot(self._sigomatrixEig[1][:,self._sigomatrixEigsortIndx],
+                      dO)
+        Om= dO+numpy.tile(self._progenitor_Omega.T,(n,1)).T
+        #Also generate angles
+        da= numpy.random.normal(size=(3,n))*self._sigangle
+        #And a random time
+        dt= self.sample_t(n)
+        #Integrate the orbits relative to the progenitor
+        da+= dO*numpy.tile(dt,(3,1))
+        angle= da+numpy.tile(self._progenitor_angle.T,(n,1)).T
+        return (Om,angle,dt)
+    
+    def sample_t(self,n):
+        """
+        NAME:
+           sample_t
+        PURPOSE:
+           generate a stripping time (time since stripping); simple implementation could be replaced by more complicated distributions in sub-classes of streamdf
+        INPUT:
+            n - number of points to return
+        OUTPUT:
+           array of n stripping times
+        HISTORY:
+           2015-09-16 - Written - Bovy (UofT)
+        """
+        return numpy.random.uniform(size=n)*self._tdisrupt
 
 def _h_ars(x,params):
     """ln p(Omega) for ARS"""

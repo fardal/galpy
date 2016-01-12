@@ -23,7 +23,12 @@ from galpy.potential_src import EllipticalDiskPotential
 from galpy.potential_src import CosmphiDiskPotential
 from galpy.potential_src import RazorThinExponentialDiskPotential
 from galpy.potential_src import FlattenedPowerPotential
+from galpy.potential_src import SnapshotRZPotential
 from galpy.potential_src import BurkertPotential
+from galpy.potential_src import MN3ExponentialDiskPotential
+from galpy.potential_src import KuzminKutuzovStaeckelPotential
+from galpy.potential_src import PlummerPotential
+from galpy.potential_src import PseudoIsothermalPotential
 #
 # Functions
 #
@@ -63,6 +68,8 @@ evaluatelinearPotentials= linearPotential.evaluatelinearPotentials
 evaluatelinearForces= linearPotential.evaluatelinearForces
 PotentialError= Potential.PotentialError
 LinShuReductionFactor= planarPotential.LinShuReductionFactor
+nemo_accname= Potential.nemo_accname
+nemo_accpars= Potential.nemo_accpars
 #
 # Classes
 #
@@ -93,7 +100,14 @@ LopsidedDiskPotential= CosmphiDiskPotential.LopsidedDiskPotential
 CosmphiDiskPotential= CosmphiDiskPotential.CosmphiDiskPotential
 RazorThinExponentialDiskPotential= RazorThinExponentialDiskPotential.RazorThinExponentialDiskPotential
 FlattenedPowerPotential= FlattenedPowerPotential.FlattenedPowerPotential
+InterpSnapshotRZPotential = SnapshotRZPotential.InterpSnapshotRZPotential
+SnapshotRZPotential = SnapshotRZPotential.SnapshotRZPotential
 BurkertPotential= BurkertPotential.BurkertPotential
+MN3ExponentialDiskPotential= MN3ExponentialDiskPotential.MN3ExponentialDiskPotential
+KuzminKutuzovStaeckelPotential = KuzminKutuzovStaeckelPotential.KuzminKutuzovStaeckelPotential
+PlummerPotential = PlummerPotential.PlummerPotential
+PseudoIsothermalPotential = PseudoIsothermalPotential.PseudoIsothermalPotential
+
 #Softenings
 PlummerSoftening= ForceSoftening.PlummerSoftening
 

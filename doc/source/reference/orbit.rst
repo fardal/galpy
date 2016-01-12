@@ -1,5 +1,5 @@
-Orbit
-=====
+Orbit (``galpy.orbit``)
+========================
 
 See :ref:`Orbit initialization <orbinit>` for a detailed explanation
 on how to set up Orbit instances.
@@ -72,6 +72,7 @@ Methods
    resetaA <orbitresetaa.rst>
    rperi <orbitrperi.rst>
    setphi <orbitsetphi.rst>
+   time <orbittime.rst>
    toLinear <orbittolinear.rst>
    toPlanar <orbittoplanar.rst>
    Tp <orbittp.rst>

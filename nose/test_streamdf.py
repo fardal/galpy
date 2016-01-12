@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 import functools
 import nose
 import numpy
@@ -24,6 +25,7 @@ def test_progenitor_coordtransformparams():
     from galpy.potential import LogarithmicHaloPotential
     from galpy.actionAngle import actionAngleIsochroneApprox
     from galpy.util import bovy_conversion #for unit conversions
+    from galpy.util import galpyWarning
     lp= LogarithmicHaloPotential(normalize=1.,q=0.9)
     #odeint to make sure that the C integration warning isn't thrown
     aAI= actionAngleIsochroneApprox(pot=lp,b=0.8,integrate_method='odeint')
@@ -33,49 +35,69 @@ def test_progenitor_coordtransformparams():
     sigv= 0.365 #km/s
     #Turn warnings into errors to test for them
     import warnings
-    warnings.simplefilter("error")
-    #Test w/ diff Rnorm
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always",galpyWarning)
+        #Test w/ diff Rnorm
         sdf_bovy14= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
                              leading=True,
                              nTrackChunks=11,
                              tdisrupt=4.5/bovy_conversion.time_in_Gyr(220.,8.),
                              nosetup=True, #won't look at track
                              Rnorm=10.)
-    except: pass
-    else: raise AssertionError("streamdf setup does not raise warning when progenitor's  ro is different from Rnorm")
+        # Should raise warning bc of Rnorm, might raise others
+        raisedWarning= False
+        for wa in w:
+            raisedWarning= (str(wa.message) == "Warning: progenitor's ro does not agree with streamdf's Rnorm and R0; this may have unexpected consequences when projecting into observables")
+            if raisedWarning: break
+        assert raisedWarning, "streamdf setup does not raise warning when progenitor's  ro is different from Rnorm"
     #Test w/ diff R0
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always",galpyWarning)
         sdf_bovy14= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
                              leading=True,
                              nTrackChunks=11,
                              tdisrupt=4.5/bovy_conversion.time_in_Gyr(220.,8.),
                              nosetup=True, #won't look at track
                              R0=10.)
-    except: pass
-    else: raise AssertionError("streamdf setup does not raise warning when progenitor's  ro is different from R0")
+        # Should raise warning bc of R0, might raise others
+        raisedWarning= False
+        for wa in w:
+            raisedWarning= (str(wa.message) == "Warning: progenitor's ro does not agree with streamdf's Rnorm and R0; this may have unexpected consequences when projecting into observables")
+            if raisedWarning: break
+        assert raisedWarning, "streamdf setup does not raise warning when progenitor's  ro is different from R0"
     #Test w/ diff Vnorm
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always",galpyWarning)
         sdf_bovy14= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
                              leading=True,
                              nTrackChunks=11,
                              tdisrupt=4.5/bovy_conversion.time_in_Gyr(220.,8.),
                              nosetup=True, #won't look at track
                              Rnorm=8.5,R0=8.5,Vnorm=220.)
-    except: pass
-    else: raise AssertionError("streamdf setup does not raise warning when progenitor's  vo is different from Vnorm")
+        # Should raise warning bc of Vnorm, might raise others
+        raisedWarning= False
+        for wa in w:
+            raisedWarning= (str(wa.message) == "Warning: progenitor's vo does not agree with streamdf's Vnorm; this may have unexpected consequences when projecting into observables")
+            if raisedWarning: break
+        assert raisedWarning, "streamdf setup does not raise warning when progenitor's  vo is different from Vnorm"
     #Test w/ diff zo
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always",galpyWarning)
         sdf_bovy14= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
                              leading=True,
                              nTrackChunks=11,
                              tdisrupt=4.5/bovy_conversion.time_in_Gyr(220.,8.),
                              nosetup=True, #won't look at track
                              Rnorm=8.5,R0=8.5,Vnorm=235.,Zsun=0.025)
-    except: pass
-    else: raise AssertionError("streamdf setup does not raise warning when progenitor's  zo is different from Zsun")
+        # Should raise warning bc of zo, might raise others
+        raisedWarning= False
+        for wa in w:
+            raisedWarning= (str(wa.message) == "Warning: progenitor's zo does not agree with streamdf's Zsun; this may have unexpected consequences when projecting into observables")
+            if raisedWarning: break
+        assert raisedWarning, "streamdf setup does not raise warning when progenitor's  zo is different from Zsun"
     #Test w/ diff vsun
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always",galpyWarning)
         sdf_bovy14= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
                              leading=True,
                              nTrackChunks=11,
@@ -83,10 +105,12 @@ def test_progenitor_coordtransformparams():
                              nosetup=True, #won't look at track
                              Rnorm=8.5,R0=8.5,Vnorm=235.,Zsun=0.1,
                              vsun=[0.,220.,0.])
-    except: pass
-    else: raise AssertionError("streamdf setup does not raise warning when progenitor's  solarmotion is different from vsun")
-    #Turn warnings back into warnings
-    warnings.simplefilter("default")
+        # Should raise warning bc of vsun, might raise others
+        raisedWarning= False
+        for wa in w:
+            raisedWarning= (str(wa.message) == "Warning: progenitor's solarmotion does not agree with streamdf's vsun (after accounting for Vnorm); this may have unexpected consequences when projecting into observables")
+            if raisedWarning: break
+        assert raisedWarning, "streamdf setup does not raise warning when progenitor's  solarmotion is different from vsun"
     return None
 
 #Exact setup from Bovy (2014); should reproduce those results (which have been
@@ -192,6 +216,13 @@ def test_closest_trackpointaA():
     #Check that we can find the closest trackpoint properly in AA
     check_closest_trackpointaA(sdf_bovy14,50)
     check_closest_trackpointaA(sdf_bovy14,4,interp=False)
+    return None
+
+def test_density_par():
+    #Test that the density is close to 1 close to the progenitor and close to zero far from the progenitor
+    assert numpy.fabs(sdf_bovy14.density_par(0.1)-1.) < 10.**-2., 'density near progenitor not close to 1 for Bovy14 stream'
+    assert numpy.fabs(sdf_bovy14.density_par(0.5)-1.) < 10.**-2., 'density near progenitor not close to 1 for Bovy14 stream'
+    assert numpy.fabs(sdf_bovy14.density_par(1.8)-0.) < 10.**-2., 'density far progenitor not close to 0 for Bovy14 stream'
     return None
 
 def test_meanOmega():
@@ -340,14 +371,22 @@ def test_bovy14_approxaA_inv():
                        RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=True)
     #Point on track, not interpolated
     RvR= sdf_bovy14._interpolatedObsTrack[152,:]
-    check_approxaA_inv(sdf_bovy14,-5.,
+    check_approxaA_inv(sdf_bovy14,-3.,
                        RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=False)
     #Point near track, interpolated
     RvR= sdf_bovy14._interpolatedObsTrack[22,:]*(1.+10.**-2.)
-    check_approxaA_inv(sdf_bovy14,-3.,
+    check_approxaA_inv(sdf_bovy14,-2.,
                        RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=True)
     #Point near track, not interpolated
     RvR= sdf_bovy14._interpolatedObsTrack[152,:]*(1.+10.**-2.)
+    check_approxaA_inv(sdf_bovy14,-2.,
+                       RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=False)
+    #Point near end of track, interpolated
+    RvR= sdf_bovy14._interpolatedObsTrack[-23,:]
+    check_approxaA_inv(sdf_bovy14,-2.,
+                       RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=True)
+    #Point near end of track, not interpolated
+    RvR= sdf_bovy14._interpolatedObsTrack[-23,:]
     check_approxaA_inv(sdf_bovy14,-2.,
                        RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=False)
     #Now find some trackpoints close to where angles wrap, to test that wrapping is covered properly everywhere
@@ -355,7 +394,7 @@ def test_bovy14_approxaA_inv():
         sdf_bovy14._interpolatedObsTrack[:,5]
     indx= dphi < 0.
     RvR= sdf_bovy14._interpolatedObsTrack[indx,:][0,:]*(1.+10.**-2.)
-    check_approxaA_inv(sdf_bovy14,-3.,
+    check_approxaA_inv(sdf_bovy14,-2.,
                        RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5],interp=False)
     return None
 
@@ -630,8 +669,8 @@ def test_bovy14_callMargDPMLL():
                       sdf_bovy14.callMarg([None,meanp[1],None,None,8.,None],
                                           lb=True,
                                           cindx=cindx,interp=True)) < 10.**10., 'callMarg with cindx set does not agree with it set to default'
-    if cindx % 100 > 50: cindx= cindx/100+1
-    else: cindx= cindx/100
+    if cindx % 100 > 50: cindx= cindx//100+1
+    else: cindx= cindx//100
     assert numpy.fabs(sdf_bovy14.callMarg([None,meanp[1],None,None,8.,None],
                                           lb=True,interp=False)-
                       sdf_bovy14.callMarg([None,meanp[1],None,None,8.,None],
@@ -770,7 +809,7 @@ def test_bovy14_oppositetrailing_setup():
                               leading=False) #expl set iterations
     except IOError: pass
     else: raise AssertionError('streamdf setup w/ potential neq actionAngle-potential did not raise IOError')
-    #Warning when deltaAngleTrack is too large (turn warning into error for testing)
+    #Warning when deltaAngleTrack is too large (turn warning into error for testing; not using catch_warnings, bc we need this to actually fail [setup doesn't work for such a large deltaAngleTrack])
     import warnings
     warnings.simplefilter("error")
     try:
@@ -972,6 +1011,33 @@ def test_fardalwmwpot_trackaa():
     assert numpy.all(numpy.fabs((aastream[:,3:]-aastream_expl[:,3:])/2./numpy.pi) < 0.001), 'Explicitly calculated angles along the track do not agree with the angles on which the track is based for Fardal setup'
     return None
 
+def test_setup_progIsTrack():
+    #Test that setting up with progIsTrack=True gives a track that is very close to the given progenitor, such that it works as it should
+    #Imports
+    from galpy.df import streamdf
+    from galpy.orbit import Orbit
+    from galpy.potential import LogarithmicHaloPotential
+    from galpy.actionAngle import actionAngleIsochroneApprox
+    from galpy.util import bovy_conversion #for unit conversions
+    lp= LogarithmicHaloPotential(normalize=1.,q=0.9)
+    aAI= actionAngleIsochroneApprox(pot=lp,b=0.8)
+    obs= Orbit([1.56148083,0.35081535,-1.15481504,
+                0.88719443,-0.47713334,0.12019596],
+               ro=8.,vo=220.)
+    sigv= 0.365 #km/s
+    sdfp= streamdf(sigv/220.,progenitor=obs,pot=lp,aA=aAI,
+                   leading=True,
+                   nTrackChunks=11,
+                   tdisrupt=4.5/bovy_conversion.time_in_Gyr(220.,8.),
+                   progIsTrack=True)
+    assert numpy.all(numpy.fabs(obs._orb.vxvv-sdfp._ObsTrack[0,:]) < 10.**-3.), 'streamdf setup with progIsTrack does not return a track that is close to the given orbit at the start'
+    # Integrate the orbit a little bit and test at a further point
+    obs.integrate(numpy.linspace(0.,2.,10001),lp)
+    indx= numpy.argmin(numpy.fabs(sdfp._interpolatedObsTrack[:,0]-1.75))
+    oindx= numpy.argmin(numpy.fabs(obs._orb.orbit[:,0]-1.75))
+    assert numpy.all(numpy.fabs(sdfp._interpolatedObsTrack[indx,:5]-obs._orb.orbit[oindx,:5]) < 10.**-2.), 'streamdf setup with progIsTrack does not return a track that is close to the given orbit somewhat further from the start'
+    return None  
+
 def check_track_prog_diff(sdf,d1,d2,tol,phys=False):
     observe= [sdf._R0,0.,sdf._Zsun]
     observe.extend(sdf._vsun)
@@ -1141,11 +1207,11 @@ def check_approxaA_inv(sdf,tol,R,vR,vT,z,vz,phi,interp=True):
     if phi > 2.*numpy.pi: phi-= 2.*numpy.pi
     if phi < 0.: phi+= 2.*numpy.pi
     #print numpy.fabs((RvR[0]-R)/R), numpy.fabs((RvR[1]-vR)/vR), numpy.fabs((RvR[2]-vT)/vT), numpy.fabs((RvR[3]-z)/z), numpy.fabs((RvR[4]-vz)/vz), numpy.fabs((RvR[5]-phi)/phi)
-    assert numpy.fabs((RvR[0]-R)/R) < 10.**tol, 'R after _approxaA and _approxaAInv does not agree with initial R'
+    assert numpy.fabs((RvR[0]-R)/R) < 10.**tol, 'R after _approxaA and _approxaAInv does not agree with initial R; relative difference = %g' % (numpy.fabs((RvR[0]-R)/R))
     assert numpy.fabs((RvR[1]-vR)/vR) < 10.**tol, 'vR after _approxaA and _approxaAInv does not agree with initial vR'
     assert numpy.fabs((RvR[2]-vT)/vT) < 10.**tol, 'vT after _approxaA and _approxaAInv does not agree with initial vT'
     assert numpy.fabs((RvR[3]-z)/z) < 10.**tol, 'z after _approxaA and _approxaAInv does not agree with initial z'
     assert numpy.fabs((RvR[4]-vz)/vz) < 10.**tol, 'vz after _approxaA and _approxaAInv does not agree with initial vz'
-    assert numpy.fabs((RvR[5]-phi)/phi) < 10.**tol, 'phi after _approxaA and _approxaAInv does not agree with initial phi'
+    assert numpy.fabs((RvR[5]-phi)/phi) < 10.**tol, 'phi after _approxaA and _approxaAInv does not agree with initial phi; relative difference = %g' % (numpy.fabs((RvR[5]-phi)/phi))
     return None
 

@@ -6,12 +6,14 @@ Dynamical modeling of tidal streams
 galpy contains tools to model the dynamics of tidal streams, making
 extensive use of action-angle variables. As an example, we can model
 the dynamics of the following tidal stream (that of Bovy 2014;
-`arXiv/1401.2985 <http://arxiv.org/abs/1401.2985>`_). This movie shows
-the disruption of a cluster on a GD-1-like orbit around the Milky Way:
+`2014ApJ...795...95B
+<http://adsabs.harvard.edu/abs/2014ApJ...795...95B>`_). This movie
+shows the disruption of a cluster on a GD-1-like orbit around the
+Milky Way:
 
 .. raw:: html
 
-   <embed src="http://sns.ias.edu/~bovy/streams/gd1-sim/gd1_evol_orbplane_comov.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
+   <embed src="http://astro.utoronto.ca/~bovy/streams/gd1-sim/gd1_evol_orbplane_comov.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
 
 The blue line is the orbit of the progenitor cluster and the black
 points are cluster members. The disruption is shown in an approximate
@@ -26,7 +28,7 @@ generation of the stream in action space
 
 .. raw:: html
 
-   <embed src="http://sns.ias.edu/~bovy/streams/gd1-sim/gd1_evol_aai_jrjzlz_debris.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
+   <embed src="http://astro.utoronto.ca/~bovy/streams/gd1-sim/gd1_evol_aai_jrjzlz_debris.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
 
 The color-coding gives the angular momentum :math:`J_\phi` and the
 black dot shows the progenitor orbit. These actions were calculated
@@ -35,7 +37,7 @@ move slightly because of small errors in the action calculation (these
 are correlated, so the cloud of points moves coherently because of
 calculation errors). The same movie that also shows the actions of
 stars in the cluster can be found `here
-<http://sns.ias.edu/~bovy/streams/gd1-sim/gd1_evol_aai_jrjzlz.mpg>`_. This
+<http://astro.utoronto.ca/~bovy/streams/gd1-sim/gd1_evol_aai_jrjzlz.mpg>`_. This
 shows that the actions of stars in the cluster are not conserved
 (because the self-gravity of the cluster is important), but that the
 actions of stream members freeze once they are stripped. The angle
@@ -44,7 +46,7 @@ linearly with time, which is shown in the following movie:
 
 .. raw:: html
 
-   <embed src="http://sns.ias.edu/~bovy/streams/gd1-sim/gd1_evol_aai_arazap.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
+   <embed src="http://astro.utoronto.ca/~bovy/streams/gd1-sim/gd1_evol_aai_arazap.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
 
 where the radial and vertical angle difference with respect to the
 progenitor (co-moving at :math:`(\theta_R,\theta_\phi,\theta_Z) =
@@ -60,7 +62,7 @@ by the time at which they were removed from the progenitor cluster.
 
 .. raw:: html
 
-   <embed src="http://sns.ias.edu/~bovy/streams/gd1-sim/gd1_evol_aai_oparapar.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
+   <embed src="http://astro.utoronto.ca/~bovy/streams/gd1-sim/gd1_evol_aai_oparapar.mpg" AUTOPLAY="false" LOOP="false" width="600" height="515" Pluginspage="http://www.apple.com/quicktime/" CONTROLLER=True></embed>
 
 It is clear that disruption happens in bursts (at pericenter passages)
 and that the initial frequency distribution at the time of removal
@@ -106,6 +108,30 @@ and instantiate the streamdf model
 
 for a leading stream. This runs in about half a minute on a 2011
 Macbook Air. 
+
+Bovy (2014) discusses how the calculation of the track needs to be
+iterated for potentials where there is a large offset between the
+track and a single orbit. One can increase the default number of
+iterations by specifying ``nTrackIterations=`` in the streamdf
+initialization (the default is set based on the angle between the
+track's frequency vector and the progenitor orbit's frequency vector;
+you can access the number of iterations used as
+``sdf.nTrackIterations``). To check whether the track is calculated
+accurately, one can use the following
+
+>>> sdf.plotCompareTrackAAModel()
+
+which in this case gives
+
+.. image:: images/sdf_plotcomparetrackaamodel.png
+
+This displays the stream model's track in frequency offset (y axis)
+versus angle offset (x axis) as the solid line; this is the track that
+the model should have if it is calculated correctly. The points are
+the frequency and angle offset calculated from the calculated track's
+:math:`(\mathbf{x},\mathbf{v})`. For a properly computed track these
+should line up, as they do in this figure. If they do not line up,
+increasing ``nTrackIterations`` is necessary.
 
 We can calculate some simple properties of the stream, such as the
 ratio of the largest and second-to-largest eigenvalue of the Hessian
@@ -360,6 +386,101 @@ that this really is the closest track point. Otherwise the approximate
 PDF will not be quite correct.
  
 
+.. _streamgap-tutorial:
 
+**NEW:** Modeling gaps in streams
+----------------------------------
 
+``galpy`` also contains tools to model the effect of impacts due to
+dark-matter subhalos on streams (see `Sanders, Bovy, & Erkal 2015
+<http://arxiv.org/abs/1510.03426>`__). This is implemented as a
+subclass ``streamgapdf`` of ``streamdf``, because they share many of
+the same methods. Setting up a ``streamgapdf`` object requires the
+same arguments and keywords as setting up a ``streamdf`` instance (to
+specify the smooth underlying stream model and the Galactic potential)
+as well as parameters that specify the impact (impact parameter and
+velocity, location and time of closest approach, mass and structure of
+the subhalo, and helper keywords that specify how the impact should be
+calculated). An example used in the paper (but not that with the
+modifications in Sec. 6.1) is as follows. Imports:
 
+>>> from galpy.df import streamdf, streamgapdf
+>>> from galpy.orbit import Orbit
+>>> from galpy.potential import LogarithmicHaloPotential
+>>> from galpy.actionAngle import actionAngleIsochroneApprox
+>>> from galpy.util import bovy_conversion
+
+Parameters for the smooth stream and the potential:
+
+>>> lp= LogarithmicHaloPotential(normalize=1.,q=0.9)
+>>> aAI= actionAngleIsochroneApprox(pot=lp,b=0.8)
+>>> prog_unp_peri= Orbit([2.6556151742081835,
+                          0.2183747276300308,
+                          0.67876510797240575,
+                          -2.0143395648974671,
+                          -0.3273737682604374,
+                          0.24218273922966019])
+>>> V0, R0= 220., 8.
+>>> sigv= 0.365*(10./2.)**(1./3.) # km/s
+>>> tdisrupt= 10.88/bovy_conversion.time_in_Gyr(V0,R0)
+
+and the parameters of the impact
+
+>>> GM= 10.**-2./bovy_conversion.mass_in_1010msol(V0,R0)
+>>> rs= 0.625/R0
+>>> impactb= 0.
+>>> subhalovel= numpy.array([6.82200571,132.7700529,149.4174464])/V0
+>>> timpact= 0.88/bovy_conversion.time_in_Gyr(V0,R0)
+>>> impact_angle= -2.34
+
+The setup is then
+
+>>> sdf_sanders15= streamgapdf(sigv/V0,progenitor=prog_unp_peri,pot=lp,aA=aAI,
+                               leading=False,nTrackChunks=26,
+                               nTrackIterations=1,
+                               sigMeanOffset=4.5,
+                               tdisrupt=tdisrupt,
+                               Vnorm=V0,Rnorm=R0,
+                               impactb=impactb,
+                               subhalovel=subhalovel,
+                               timpact=timpact,
+                               impact_angle=impact_angle,
+                               GM=GM,rs=rs)
+
+The ``streamgapdf`` implementation is currently not entirely complete
+(for example, one cannot yet evaluate the full phase-space PDF), but
+the model can be sampled as in the paper above. To compare the
+perturbed model to the unperturbed model, we also set up an
+unperturbed model of the same stream
+
+>>> sdf_sanders15_unp= streamdf(sigv/V0,progenitor=prog_unp_peri,pot=lp,aA=aAI,
+                               leading=False,nTrackChunks=26,
+                               nTrackIterations=1,
+                               sigMeanOffset=4.5,
+                               tdisrupt=tdisrupt,
+                               Vnorm=V0,Rnorm=R0)
+
+We can then sample positions and velocities for the perturbed and
+unperturbed preduction for the *same* particle by using the same
+random seed:
+
+>>> numpy.random.seed(1)
+>>> xv_mock_per= sdf_sanders15.sample(n=100000,xy=True).T
+>>> numpy.random.seed(1) # should give same points
+>>> xv_mock_unp= sdf_sanders15_unp.sample(n=100000,xy=True).T
+
+and we can plot the offset due to the perturbation, for example,
+
+>>> plot(xv_mock_unp[:,0]*R0,(xv_mock_per[:,0]-xv_mock_unp[:,0])*R0,'k,')
+
+for the difference in :math:`X` as a function of unperturbed :math:`X`:
+
+.. image:: images/sdfg_dxx.png
+
+or 
+
+>>> plot(xv_mock_unp[:,0]*R0,(xv_mock_per[:,4]-xv_mock_unp[:,4])*V0,'k,')
+
+for the difference in :math:`v_Y` as a function of unperturbed :math:`X`:
+
+.. image:: images/sdfg_dvyx.png

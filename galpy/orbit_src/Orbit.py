@@ -1,12 +1,15 @@
+import warnings
 import numpy as nu
 import galpy.util.bovy_coords as coords
 from galpy.util.bovy_conversion import physical_conversion
-from FullOrbit import FullOrbit
-from RZOrbit import RZOrbit
-from planarOrbit import planarOrbit, planarROrbit, planarOrbitTop
-from linearOrbit import linearOrbit
+from galpy.util import galpyWarning
+from galpy.orbit_src.FullOrbit import FullOrbit
+from galpy.orbit_src.RZOrbit import RZOrbit
+from galpy.orbit_src.planarOrbit import planarOrbit, planarROrbit, \
+    planarOrbitTop
+from galpy.orbit_src.linearOrbit import linearOrbit
 _K=4.74047
-class Orbit:
+class Orbit(object):
     """General orbit class representing an orbit"""
     def __init__(self,vxvv=None,uvw=False,lb=False,
                  radec=False,vo=None,ro=None,zo=0.025,
@@ -248,9 +251,11 @@ class Orbit:
            2014-06-17 - Written - Bovy (IAS)
 
         """
+        self._roSet= False
+        self._voSet= False
         self._orb.turn_physical_off()
 
-    def integrate(self,t,pot,method='symplec4_c'):
+    def integrate(self,t,pot,method='symplec4_c',dt=None):
         """
         NAME:
 
@@ -275,6 +280,8 @@ class Orbit:
                    'rk6_c' for a 6-th order Runge-Kutta integrator in C
                    'dopr54_c' for a Dormand-Prince integrator in C (generally the fastest)
 
+           dt= (None) if set, force the integrator to use this basic stepsize; must be an integer divisor of output stepsize (only works for the C integrators that use a fixed stepsize)
+
         OUTPUT:
 
            (none) (get the actual orbit using getOrbit()
@@ -283,8 +290,16 @@ class Orbit:
 
            2010-07-10 - Written - Bovy (NYU)
 
+           2015-06-28 - Added dt keyword - Bovy (IAS)
+
         """
-        self._orb.integrate(t,pot,method=method)
+        from galpy.potential import MWPotential
+        if pot == MWPotential:
+            warnings.warn("Use of MWPotential as a Milky-Way-like potential is deprecated; galpy.potential.MWPotential2014, a potential fit to a large variety of dynamical constraints (see Bovy 2015), is the preferred Milky-Way-like potential in galpy",
+                          galpyWarning)
+        if not _check_integrate_dt(t,dt):
+            raise ValueError('dt input (integrator stepsize) for Orbit.integrate must be an integer divisor of the output stepsize')
+        self._orb.integrate(t,pot,method=method,dt=dt)
 
     def integrate_dxdv(self,dxdv,t,pot,method='dopr54_c',
                        rectIn=False,rectOut=False):
@@ -357,9 +372,8 @@ class Orbit:
         """
         if hasattr(self,'_orbInterp'): delattr(self,'_orbInterp')
         if hasattr(self,'rs'): delattr(self,'rs')
-        sortindx = range(len(self._orb.t))
-        sortindx.sort(lambda x,y: cmp(self._orb.t[x],self._orb.t[y]),
-                      reverse=True)
+        sortindx = list(range(len(self._orb.t)))
+        sortindx.sort(key=lambda x: self._orb.t[x],reverse=True)
         for ii in range(self._orb.orbit.shape[1]):
             self._orb.orbit[:,ii]= self._orb.orbit[sortindx,ii]
         return None
@@ -1457,7 +1471,7 @@ class Orbit:
 
         INPUT:
 
-           t - (optional) time at which to get the time (for consistency reasons)
+           t - (default: integration times) time at which to get the time (for consistency reasons); default is to return the list of times at which the orbit is sampled
 
            ro= (Object-wide default) physical scale for distances to use to convert
 
@@ -1703,7 +1717,9 @@ class Orbit:
            2010-09-21 - Written - Bovy (NYU)
 
         """
-        return self._orb.x(*args,**kwargs)
+        out= self._orb.x(*args,**kwargs)
+        if len(out) == 1: return out[0]
+        else: return out
 
     def y(self,*args,**kwargs):
         """
@@ -1732,7 +1748,9 @@ class Orbit:
            2010-09-21 - Written - Bovy (NYU)
 
         """
-        return self._orb.y(*args,**kwargs)
+        out= self._orb.y(*args,**kwargs)
+        if len(out) == 1: return out[0]
+        else: return out
 
     def vx(self,*args,**kwargs):
         """
@@ -1761,7 +1779,9 @@ class Orbit:
            2010-11-30 - Written - Bovy (NYU)
 
         """
-        return self._orb.vx(*args,**kwargs)
+        out= self._orb.vx(*args,**kwargs)
+        if len(out) == 1: return out[0]
+        else: return out
 
     def vy(self,*args,**kwargs):
         """
@@ -1791,7 +1811,9 @@ class Orbit:
            2010-11-30 - Written - Bovy (NYU)
 
         """
-        return self._orb.vy(*args,**kwargs)
+        out= self._orb.vy(*args,**kwargs)
+        if len(out) == 1: return out[0]
+        else: return out
 
     def ra(self,*args,**kwargs):
         """
@@ -1958,6 +1980,7 @@ class Orbit:
            t - (optional) time at which to get pmra
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -1992,6 +2015,7 @@ class Orbit:
            t - (optional) time at which to get pmdec
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2026,6 +2050,7 @@ class Orbit:
            t - (optional) time at which to get pmll
 
 v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2060,6 +2085,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get pmbb
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2094,6 +2120,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get vlos
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2128,6 +2155,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get vra
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2163,6 +2191,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get vdec
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2198,6 +2227,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get vll
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2233,6 +2263,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get vbb
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2268,6 +2299,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get X
 
            obs=[X,Y,Z] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2300,6 +2332,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get Y
 
            obs=[X,Y,Z] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2332,6 +2365,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get Z
 
            obs=[X,Y,Z] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2364,6 +2398,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get U
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2398,6 +2433,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get U
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -2432,6 +2468,7 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
            t - (optional) time at which to get W
 
            obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer 
+                         in the Galactocentric frame
                          (in kpc and km/s) (default=[8.0,0.,0.,0.,220.,0.])
                          OR Orbit object that corresponds to the orbit
                          of the observer
@@ -3169,15 +3206,13 @@ v           obs=[X,Y,Z,vx,vy,vz] - (optional) position and velocity of observer
                                linOrb._orb.vxvv[3]],
                          **orbSetupKwargs)
 
-    #4 pickling
-    def __getinitargs__(self):
-        if self._orb._roSet:
-            iro= self._orb._ro
-        else:
-            iro= None
-        if self._orb._voSet:
-            ivo= self._orb._vo
-        else:
-            ivo= None
-        return (self._orb.vxvv,False,False,False,ivo,iro,
-                self._orb._zo,self._orb._solarmotion)
+def _check_integrate_dt(t,dt):
+    """Check that the stepszie in t is an integer x dt"""
+    if dt is None:
+        return True
+    mult= round((t[1]-t[0])/dt)
+    if nu.fabs(mult*dt-t[1]+t[0]) < 10.**-10.:
+        return True
+    else:
+        return False
+
