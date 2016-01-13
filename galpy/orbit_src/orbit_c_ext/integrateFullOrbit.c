@@ -96,6 +96,15 @@ void parse_leapFuncArgs_Full(int npot,
       //potentialArgs->planarRphideriv= &ZeroForce;
       potentialArgs->nargs= 2;
       break;
+    case 91: //FlattenedNFWPotential, 3 arguments
+      potentialArgs->Rforce= &FlattenedNFWPotentialRforce;
+      potentialArgs->zforce= &FlattenedNFWPotentialzforce;
+      potentialArgs->phiforce= &ZeroForce;
+      //potentialArgs->R2deriv= &FlattenedNFWPotentialR2deriv;
+      //potentialArgs->planarphi2deriv= &ZeroForce;
+      //potentialArgs->planarRphideriv= &ZeroForce;
+      potentialArgs->nargs= 3;
+      break;
     case 10: //JaffePotential, 2 arguments
       potentialArgs->Rforce= &JaffePotentialRforce;
       potentialArgs->zforce= &JaffePotentialzforce;

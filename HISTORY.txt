@@ -9,7 +9,8 @@ v1.2 (2016-XX-XX)
   R,z,phi=0.,**kwargs; etc.). This breaks the example in Figure 4 of
   the galpy paper, where _Rforce and _zforce now require an additional
   *kwargs.
-
+- Added a module for modeling the effect of a subhalo impact on a
+  tidal stream (galpy.df.streamgapdf).
 - Added PseudoIsothermalPotential, a standard pseudo-isothermal-sphere
   potential.
 

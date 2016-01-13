@@ -58,6 +58,13 @@ void parse_actionAngleArgs(int npot,
       potentialArgs->accx= NULL;
       potentialArgs->accy= NULL;
       break;
+    case 91: //FlattenedNFWPotential, 3 arguments
+      potentialArgs->potentialEval= &FlattenedNFWPotentialEval;
+      potentialArgs->nargs= 3;
+      potentialArgs->i2d= NULL;
+      potentialArgs->accx= NULL;
+      potentialArgs->accy= NULL;
+      break;
     case 10: //JaffePotential, 2 arguments
       potentialArgs->potentialEval= &JaffePotentialEval;
       potentialArgs->nargs= 2;

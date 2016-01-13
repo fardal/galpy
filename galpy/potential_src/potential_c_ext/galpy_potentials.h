@@ -148,6 +148,17 @@ double NFWPotentialzforce(double,double,double,double,
 			  struct potentialArg *);
 double NFWPotentialPlanarR2deriv(double ,double, double,
 				 struct potentialArg *);
+//FlattenedNFWPotential
+double FlattenedNFWPotentialEval(double ,double , double, double,
+			struct potentialArg *);
+double FlattenedNFWPotentialRforce(double ,double , double, double,
+			  struct potentialArg *);
+double FlattenedNFWPotentialPlanarRforce(double ,double, double,
+				struct potentialArg *);
+double FlattenedNFWPotentialzforce(double,double,double,double,
+			  struct potentialArg *);
+double FlattenedNFWPotentialPlanarR2deriv(double ,double, double,
+				 struct potentialArg *);
 //JaffePotential
 double JaffePotentialEval(double ,double , double, double,
 			  struct potentialArg *);
