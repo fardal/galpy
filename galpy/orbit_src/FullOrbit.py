@@ -566,6 +566,11 @@ def _integrateFullOrbit(vxvv,pot,t,method,dt):
             method= 'leapfrog'
         elif not allHasC:
             method= 'odeint'
+    if any([hasattr(p,'isDynamicalFriction') for p in nu.atleast_1d(pot)]): #maf
+        if (method.lower() != 'odeint'):
+            print 'Warning: only "odeint" method allowed ' \
+                  + 'with dynamical friction, converting.'
+            method = 'odeint'
     if method.lower() == 'leapfrog':
         #go to the rectangular frame
         this_vxvv= nu.array([vxvv[0]*nu.cos(vxvv[5]),
@@ -653,13 +658,14 @@ def _FullEOM(y,t,pot):
        2010-04-16 - Written - Bovy (NYU)
     """
     l2= (y[0]**2.*y[3])**2.
+    v = [y[1], y[3], y[5]]  #for dynamical friction - vR, vphi=dphi/dt, vz
     return [y[1],
-            l2/y[0]**3.+evaluateRforces(y[0],y[4],pot,phi=y[2],t=t),
+            l2/y[0]**3.+evaluateRforces(y[0],y[4],pot,phi=y[2],t=t,v=v),
             y[3],
-            1./y[0]**2.*(evaluatephiforces(y[0],y[4],pot,phi=y[2],t=t)-
+            1./y[0]**2.*(evaluatephiforces(y[0],y[4],pot,phi=y[2],t=t,v=v)-
                          2.*y[0]*y[1]*y[3]),
             y[5],
-            evaluatezforces(y[0],y[4],pot,phi=y[2],t=t)]
+            evaluatezforces(y[0],y[4],pot,phi=y[2],t=t,v=v)]
 
 def _rectForce(x,pot,t=0.):
     """
@@ -682,6 +688,7 @@ def _rectForce(x,pot,t=0.):
     sinphi= x[1]/R
     cosphi= x[0]/R
     if x[1] < 0.: phi= 2.*nu.pi-phi
+
     #calculate forces
     Rforce= evaluateRforces(R,x[2],pot,phi=phi,t=t)
     phiforce= evaluatephiforces(R,x[2],pot,phi=phi,t=t)
